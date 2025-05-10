@@ -7,6 +7,7 @@ export const createChatSlice = (set, get) => ({
   isDownloading: false,
   fileUploadProgress: 0,
   fileDownloadProgress: 0,
+  isDarkMode: false,
   
   channels: [],
   setChannels: (channels) => set({ channels }),
@@ -17,6 +18,17 @@ export const createChatSlice = (set, get) => ({
   setFileUploadProgress: (fileUploadProgress) => set({ fileUploadProgress }),
   setFileDownloadProgress: (fileDownloadProgress) =>
     set({ fileDownloadProgress }),
+
+  toggleDarkMode: () => set((state) => {
+    const newDarkMode = !state.isDarkMode;
+    localStorage.setItem('darkMode', newDarkMode.toString());
+    return { isDarkMode: newDarkMode };
+  }),
+  
+  setIsDarkMode: (isDarkMode) => {
+    localStorage.setItem('darkMode', isDarkMode.toString());
+    set({ isDarkMode });
+  },
 
   setSelectedChatType: (selectedChatType) => set({ selectedChatType }),
   setSelectedChatData: (selectedChatData) => set({ selectedChatData }),

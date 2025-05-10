@@ -14,6 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { getColor } from "@/lib/utils";
 import { languages } from "@/utils/languages";
 import { useSocket } from "@/context/Socketcontext";
+import { motion, AnimatePresence } from "framer-motion";
 
 const MessageContainer = () => {
   const scrollRef = useRef();
@@ -30,6 +31,7 @@ const MessageContainer = () => {
 
   const [showImage, setShowImage] = useState(false);
   const [imageURL, setImageURL] = useState(null);
+  const [isTyping, setIsTyping] = useState(false); // For typing indicator
 
   useEffect(() => {
     const getMessages = async () => {
@@ -43,7 +45,7 @@ const MessageContainer = () => {
           setSelectedChatMessages(response.data.messages);
         }
       } catch (error) {
-        console.log({ error });
+        console.error({ error });
       }
     };
 
@@ -57,7 +59,7 @@ const MessageContainer = () => {
           setSelectedChatMessages(response.data.messages);
         }
       } catch (error) {
-        console.log({ error });
+        console.error({ error });
       }
     };
 
@@ -69,11 +71,20 @@ const MessageContainer = () => {
 
   useEffect(() => {
     if (!socket) return;
-    console.log(
-      "Message container mounted - translation events are handled in socket context"
-    );
+    
+    // Mock typing indicator - in a real app you would use socket events
+    const mockTypingIndicator = () => {
+      // Randomly show typing indicator sometimes
+      if (Math.random() > 0.7) {
+        setIsTyping(true);
+        setTimeout(() => setIsTyping(false), 3000);
+      }
+    };
+    
+    const typingInterval = setInterval(mockTypingIndicator, 10000);
+    
     return () => {
-      console.log("Message container unmounted");
+      clearInterval(typingInterval);
     };
   }, [socket]);
 
@@ -81,7 +92,7 @@ const MessageContainer = () => {
     if (scrollRef.current) {
       scrollRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [selectedChatMessages]);
+  }, [selectedChatMessages, isTyping]);
 
   const checkIfImage = (filePath) => {
     const imageRegex =
@@ -95,15 +106,27 @@ const MessageContainer = () => {
       const messageDate = moment(message.timestamp).format("YYYY-MM-DD");
       const showDate = messageDate !== lastDate;
       lastDate = messageDate;
+      
+      // Check if this is first message from this sender or a new day
+      const isFirstMessageFromSender = index === 0 || 
+        (selectedChatMessages[index-1].sender !== message.sender);
+      
       return (
         <div key={index}>
           {showDate && (
-            <div className="text-center text-gray-500 my-2">
-              {moment(message.timestamp).format("LL")}
-            </div>
+            <motion.div 
+              className="flex justify-center my-4"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <span className="px-3 py-1 bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-gray-300 text-xs rounded-full shadow-sm">
+                {moment(message.timestamp).format("LL")}
+              </span>
+            </motion.div>
           )}
-          {selectedChatType === "contact" && renderDMMessages(message)}
-          {selectedChatType === "channel" && renderChannelMessages(message)}
+          {selectedChatType === "contact" && renderDMMessages(message, index)}
+          {selectedChatType === "channel" && renderChannelMessages(message, index)}
         </div>
       );
     });
@@ -143,22 +166,23 @@ const MessageContainer = () => {
     }
   };
 
-  const renderDMMessages = (message) => {
+  const renderDMMessages = (message, index) => {
+    const isCurrentUser = (message.sender?._id || message.sender) === userInfo.id;
+    
     return (
-      <div
-        className={`${
-          (message.sender?._id || message.sender) === userInfo.id
-            ? "text-right"
-            : "text-left"
-        }`}
+      <motion.div
+        className={`mb-3 ${isCurrentUser ? "text-right" : "text-left"}`}
+        initial={{ opacity: 0, y: 20, x: isCurrentUser ? 20 : -20 }}
+        animate={{ opacity: 1, y: 0, x: 0 }}
+        transition={{ duration: 0.3, delay: index * 0.05 }}
       >
         {message.messageType === "text" && (
           <div
             className={`relative ${
-              (message.sender?._id || message.sender) === userInfo.id
-                ? "bg-[#6a11cb]/20 text-white border-[#a16eff]/40 ml-auto"
-                : "bg-[#2b2d42]/60 text-[#e0e0e0] border-white/30 mr-auto"
-            } border p-4 rounded my-1 max-w-[70%] w-fit break-words`}
+              isCurrentUser
+                ? "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-100 ml-auto"
+                : "bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100 mr-auto"
+            } p-3 px-4 rounded-2xl my-1 max-w-[70%] w-fit shadow-sm break-words`}
           >
             <p className="whitespace-pre-line break-words text-left">
               {message.content}
@@ -168,10 +192,10 @@ const MessageContainer = () => {
 
         {message.messageType === "file" && (
           <div
-            className={`border inline-block p-4 rounded my-1 max-w-[50%] break-words ${
-              message.sender === userInfo.id
-                ? "bg-[#6a11cb]/20 text-white border-[#a16eff]/40"
-                : "bg-[#2b2d42]/60 text-[#e0e0e0] border-white/30"
+            className={`inline-block p-3 rounded-2xl my-1 max-w-[50%] break-words shadow-sm ${
+              isCurrentUser
+                ? "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-100"
+                : "bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100"
             }`}
           >
             {checkIfImage(message.fileUrl) ? (
@@ -186,46 +210,53 @@ const MessageContainer = () => {
                   src={`${HOST}/${message.fileUrl}`}
                   height={250}
                   width={250}
-                  className="rounded-lg"
+                  className="rounded-xl shadow-sm max-w-full"
                 />
               </div>
             ) : (
-              <div className="h-auto w-auto flex items-center justify-center gap-5 ">
-                <span className="text-white/80 text-3xl bg-black/20 rounded-full p-3 ">
+              <div className="h-auto w-auto flex items-center justify-center gap-3 py-1 px-2">
+                <span className="text-indigo-600 dark:text-indigo-300 text-2xl rounded-full p-2 bg-white/50 dark:bg-slate-600/50">
                   <MdFolderZip />
                 </span>
-                <span>{message.fileUrl.split("/").pop()}</span>
-                <span
-                  className="bg-black/20 p-3 text-2xl rounded-full hover:bg-black/50 cursor-pointer transition-all duration-300"
+                <span className="text-sm overflow-hidden text-ellipsis max-w-[120px]">
+                  {message.fileUrl.split("/").pop()}
+                </span>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="p-2 text-xl rounded-full bg-indigo-500 text-white shadow-sm hover:bg-indigo-600 transition-colors"
                   onClick={() => downloadFile(message.fileUrl)}
                 >
                   <IoMdArrowRoundDown />
-                </span>
+                </motion.button>
               </div>
             )}
           </div>
         )}
-        <div className="text-xs text-gray-500">
+        <div className="text-xs text-gray-400 dark:text-gray-500 mt-1 mx-1">
           {moment(message.timestamp).format("LT")}
         </div>
-      </div>
+      </motion.div>
     );
   };
 
-  const renderChannelMessages = (message) => {
+  const renderChannelMessages = (message, index) => {
+    const isCurrentUser = message.sender._id === userInfo.id;
+    
     return (
-      <div
-        className={`mt-5 ${
-          message.sender._id === userInfo.id ? "text-right" : "text-left"
-        }`}
+      <motion.div
+        className={`mt-4 ${isCurrentUser ? "text-right" : "text-left"}`}
+        initial={{ opacity: 0, y: 20, x: isCurrentUser ? 20 : -20 }}
+        animate={{ opacity: 1, y: 0, x: 0 }}
+        transition={{ duration: 0.3, delay: index * 0.05 }}
       >
         {message.messageType === "text" && (
           <div
-            className={`border p-4 rounded my-1 max-w-[70%] w-fit break-words relative ${
-              message.sender._id === userInfo.id
-                ? "bg-[#6a11cb]/20 text-white border-[#a16eff]/40 ml-auto"
-                : "bg-[#2b2d42]/60 text-[#e0e0e0] border-white/30 mr-auto"
-            }`}
+            className={`relative ${
+              isCurrentUser
+                ? "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-100 ml-auto"
+                : "bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100 mr-auto"
+            } p-3 px-4 rounded-2xl my-1 max-w-[70%] w-fit shadow-sm break-words`}
           >
             <p className="whitespace-pre-line break-words text-left">
               {message.content}
@@ -235,10 +266,10 @@ const MessageContainer = () => {
 
         {message.messageType === "file" && (
           <div
-            className={`border inline-block p-4 rounded my-1 max-w-[50%] break-words ${
-              message.sender._id === userInfo.id
-                ? "bg-[#6a11cb]/20 text-white border-[#a16eff]/40"
-                : "bg-[#2b2d42]/60 text-[#e0e0e0] border-white/30"
+            className={`inline-block p-3 rounded-2xl my-1 max-w-[50%] break-words shadow-sm ${
+              isCurrentUser
+                ? "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-100"
+                : "bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100"
             }`}
           >
             {checkIfImage(message.fileUrl) ? (
@@ -253,37 +284,41 @@ const MessageContainer = () => {
                   src={`${HOST}/${message.fileUrl}`}
                   height={250}
                   width={250}
-                  className="rounded-lg"
+                  className="rounded-xl shadow-sm max-w-full"
                 />
               </div>
             ) : (
-              <div className="h-auto w-auto flex items-center justify-center gap-5 ">
-                <span className="text-white/80 text-3xl bg-black/20 rounded-full p-3 ">
+              <div className="h-auto w-auto flex items-center justify-center gap-3 py-1 px-2">
+                <span className="text-indigo-600 dark:text-indigo-300 text-2xl rounded-full p-2 bg-white/50 dark:bg-slate-600/50">
                   <MdFolderZip />
                 </span>
-                <span>{message.fileUrl.split("/").pop()}</span>
-                <span
-                  className="bg-black/20 p-3 text-2xl rounded-full hover:bg-black/50 cursor-pointer transition-all duration-300"
+                <span className="text-sm overflow-hidden text-ellipsis max-w-[120px]">
+                  {message.fileUrl.split("/").pop()}
+                </span>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="p-2 text-xl rounded-full bg-indigo-500 text-white shadow-sm hover:bg-indigo-600 transition-colors"
                   onClick={() => downloadFile(message.fileUrl)}
                 >
                   <IoMdArrowRoundDown />
-                </span>
+                </motion.button>
               </div>
             )}
           </div>
         )}
         {message.sender._id !== userInfo.id ? (
-          <div className="mt-1 ml-0 flex items-center justify-start gap-3">
-            <Avatar className="h-8 w-8 rounded-full overflow-hidden">
+          <div className="mt-1 ml-1 flex items-center justify-start gap-2">
+            <Avatar className="h-6 w-6 rounded-full overflow-hidden shadow-sm">
               {message.sender.image && (
                 <AvatarImage
                   src={`${HOST}/${message.sender.image}`}
                   alt="profile"
-                  className="object-cover w-full h-full bg-black"
+                  className="object-cover w-full h-full"
                 />
               )}
               <AvatarFallback
-                className={`uppercase h-8 w-8 text-lg flex items-center justify-center rounded-full ${getColor(
+                className={`uppercase h-6 w-6 text-sm flex items-center justify-center rounded-full shadow-sm ${getColor(
                   message.sender.color
                 )}`}
               >
@@ -292,56 +327,108 @@ const MessageContainer = () => {
                   : message.sender.email.split("").shift()}
               </AvatarFallback>
             </Avatar>
-            <span className="text-sm text-white/60">
+            <span className="text-xs text-gray-600 dark:text-gray-300 font-medium">
               {`${message.sender.firstName} ${message.sender.lastName}`}
             </span>
-            <span className="text-xs text-white/60 ">
+            <span className="text-[10px] text-gray-400 dark:text-gray-500">
               {moment(message.timestamp).format("LT")}
             </span>
+            
+            {/* Online status indicator */}
+            <div className="h-2 w-2 rounded-full bg-green-400 shadow-sm"></div>
           </div>
         ) : (
-          <div className="text-xs text-white/60 mt-1">
+          <div className="text-xs text-gray-400 dark:text-gray-500 mt-1 mr-1">
             {moment(message.timestamp).format("LT")}
           </div>
         )}
-      </div>
+      </motion.div>
     );
   };
 
+  // Typing indicator animation
+  const typingIndicator = () => (
+    <motion.div 
+      className="flex items-center gap-1 px-4 py-2 bg-white dark:bg-slate-700 rounded-full w-24 shadow-sm ml-2 mb-3"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 10 }}
+    >
+      <motion.div 
+        className="w-2 h-2 bg-indigo-500 rounded-full"
+        animate={{ y: [0, -5, 0] }}
+        transition={{ repeat: Infinity, duration: 0.8, delay: 0 }}
+      />
+      <motion.div 
+        className="w-2 h-2 bg-indigo-500 rounded-full"
+        animate={{ y: [0, -5, 0] }}
+        transition={{ repeat: Infinity, duration: 0.8, delay: 0.2 }}
+      />
+      <motion.div 
+        className="w-2 h-2 bg-indigo-500 rounded-full"
+        animate={{ y: [0, -5, 0] }}
+        transition={{ repeat: Infinity, duration: 0.8, delay: 0.4 }}
+      />
+    </motion.div>
+  );
+
   return (
-    <div className="flex-1 scrollbar-thin overflow-y-auto overflow-x-auto scrollbar-hidden p-4 px-8 md:w-[65vw] lg:w-[70vw] xl:w-[80vw] w-full">
-      {renderMessages()}
-      <div ref={scrollRef} />
+    <motion.div 
+      className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-2 md:px-4 lg:px-6 bg-gray-50 dark:bg-slate-900 md:w-[65vw] lg:w-[70vw] xl:w-[80vw] w-full"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      <div className="flex flex-col space-y-1">
+        {renderMessages()}
+        <AnimatePresence>
+          {isTyping && selectedChatType === "contact" && typingIndicator()}
+        </AnimatePresence>
+        <div ref={scrollRef} />
+      </div>
+      
       {showImage && (
-        <div
-          className="fixed z-[1000] top-0 left-0 h-[100vh] w-[100vw] flex items-center justify-center backdrop-blur-lg flex-col"
+        <motion.div
+          className="fixed z-[1000] top-0 left-0 h-[100vh] w-[100vw] flex items-center justify-center backdrop-blur-lg flex-col bg-black/60"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
           onClick={() => {
             setShowImage(false);
             setImageURL(null);
           }}
         >
           {/* Image Container (Prevents Closing When Clicking on Image) */}
-          <div onClick={(e) => e.stopPropagation()}>
+          <motion.div 
+            onClick={(e) => e.stopPropagation()}
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.3 }}
+          >
             <img
               src={`${HOST}/${imageURL}`}
-              className="h-[80vh] max-w-[80vw] object-contain rounded-lg"
+              className="h-[80vh] max-w-[80vw] object-contain rounded-xl shadow-2xl"
               alt="Preview"
             />
-          </div>
+          </motion.div>
 
           {/* Buttons */}
-          <div className="flex gap-5 absolute top-5 right-5">
-            <button
-              className="bg-black p-3 text-4xl rounded-full cursor-pointer transition-all duration-300"
+          <div className="flex gap-4 absolute top-5 right-5">
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              className="bg-white/10 backdrop-blur-md p-3 text-3xl rounded-full text-white cursor-pointer transition-all hover:bg-white/20"
               onClick={(e) => {
                 e.stopPropagation(); // Prevents popup from closing when clicking the button
                 downloadFile(imageURL);
               }}
             >
               <IoMdArrowRoundDown />
-            </button>
-            <button
-              className="bg-black p-3 text-4xl rounded-full cursor-pointer transition-all duration-300"
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              className="bg-white/10 backdrop-blur-md p-3 text-3xl rounded-full text-white cursor-pointer transition-all hover:bg-white/20"
               onClick={(e) => {
                 e.stopPropagation();
                 setShowImage(false);
@@ -349,11 +436,11 @@ const MessageContainer = () => {
               }}
             >
               <IoCloseSharp />
-            </button>
+            </motion.button>
           </div>
-        </div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 };
 

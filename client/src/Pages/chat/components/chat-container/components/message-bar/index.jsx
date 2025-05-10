@@ -1,12 +1,13 @@
 import EmojiPicker from "emoji-picker-react";
 import React, { useEffect, useRef, useState } from "react";
-import { GrAttachment } from "react-icons/gr";
+import { RiAttachment2 } from "react-icons/ri";
 import { IoSend } from "react-icons/io5";
 import { RiEmojiStickerLine } from "react-icons/ri";
 import { useAppStore } from "@/store";
 import { useSocket } from "@/context/Socketcontext";
 import { apiClient } from "@/lib/api-client";
 import { UPLOAD_FILE_ROUTE } from "@/utils/constants";
+import { motion, AnimatePresence } from "framer-motion";
 
 const MessageBar = () => {
   const emojiRef = useRef();
@@ -18,6 +19,7 @@ const MessageBar = () => {
     userInfo,
     setIsUploading,
     setFileUploadProgress,
+    isDarkMode,
   } = useAppStore();
   const [message, setMessage] = useState("");
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
@@ -39,7 +41,9 @@ const MessageBar = () => {
   };
 
   const handleSendMessage = async () => {
-    if (selectedChatType === "contact" && message.trim() !== "") {
+    if (message.trim() === "") return;
+    
+    if (selectedChatType === "contact") {
       socket.emit("sendMessage", {
         sender: userInfo.id,
         content: message,
@@ -102,20 +106,24 @@ const MessageBar = () => {
           }
         }
       }
-      console.log({ file });
     } catch (error) {
       setIsUploading(false);
-      console.log(error);
+      console.error(error);
     }
   };
 
   return (
-    <div className="h-[10vh] bg-[#1c1d25] flex justify-center items-center px-8 mb-6 gap-6">
-      <div className="flex-1 flex bg-[#2a2b33] rounded-md items-center gap-5 pr-5">
+    <motion.div 
+      className="h-[10vh] bg-white dark:bg-slate-800 flex justify-center items-center px-4 md:px-8 py-4 gap-4 border-t border-gray-200 dark:border-slate-700 shadow-inner"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: 0.2 }}
+    >
+      <div className="flex-1 flex bg-gray-100 dark:bg-slate-700 rounded-full items-center gap-3 pr-3 shadow-sm transition-all">
         <textarea
           rows={1}
-          placeholder="Enter message"
-          className="flex-1 p-5 bg-transparent rounded-md focus:border-none focus:outline-none resize-none overflow-hidden"
+          placeholder="Type a message..."
+          className="flex-1 py-3 px-5 bg-transparent rounded-full focus:outline-none resize-none text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={(e) => {
@@ -125,42 +133,67 @@ const MessageBar = () => {
             }
           }}
         />
-        <button
-          className="text-neutral-500 focus:border-none focus:outline-none focus:text-white duration-300 transition-all"
+        
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+          className="text-gray-500 dark:text-gray-400 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
           onClick={handleAttachmentClick}
         >
-          <GrAttachment className="text-2xl" />
-        </button>
+          <RiAttachment2 className="text-xl" />
+        </motion.button>
+        
         <input
           type="file"
           className="hidden"
           ref={fileInputRef}
           onChange={handleAttachmentChange}
         />
-        <div className="relative ">
-          <button
-            className="text-neutral-500 focus:border-none focus:outline-none focus:text-white duration-300 transition-all"
-            onClick={() => setEmojiPickerOpen(true)}
+        
+        <div className="relative">
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            className="text-gray-500 dark:text-gray-400 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
+            onClick={() => setEmojiPickerOpen(!emojiPickerOpen)}
           >
-            <RiEmojiStickerLine className="text-2xl" />
-          </button>
-          <div className="absolute bottom-16 right-0" ref={emojiRef}>
-            <EmojiPicker
-              theme="dark"
-              open={emojiPickerOpen}
-              onEmojiClick={handleAddEmoji}
-              autoFocusSearch={false}
-            />
-          </div>
+            <RiEmojiStickerLine className="text-xl" />
+          </motion.button>
+          
+          <AnimatePresence>
+            {emojiPickerOpen && (
+              <motion.div 
+                className="absolute bottom-12 right-0 z-10"
+                ref={emojiRef}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <EmojiPicker
+                  theme={isDarkMode ? "dark" : "light"}
+                  onEmojiClick={handleAddEmoji}
+                  autoFocusSearch={false}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
-      <button
-        className="bg-[#8417ff] rounded-md flex items-center justify-center p-5 focus:border-none hover:bg-[#741bda] focus:bg-[#741bda] focus:outline-none focus:text-white duration-300 transition-all"
+      
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className={`rounded-full p-3.5 flex items-center justify-center shadow-md transition-all
+          ${message.trim() 
+            ? 'bg-indigo-500 hover:bg-indigo-600 text-white' 
+            : 'bg-gray-200 dark:bg-slate-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'}`}
         onClick={handleSendMessage}
+        disabled={!message.trim()}
       >
-        <IoSend className="text-2xl" />
-      </button>
-    </div>
+        <IoSend className="text-xl" />
+      </motion.button>
+    </motion.div>
   );
 };
 

@@ -1,22 +1,46 @@
-import Background from "@/assets/login2.png";
 import Victory from "@/assets/victory.svg";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { apiClient } from "@/lib/api-client";
 import { LOGIN_ROUTE, SIGNUP_ROUTE } from "@/utils/constants";
 import { useNavigate } from "react-router-dom";
 import { useAppStore } from "@/store";
+import Lottie from "lottie-react";
+import loginAnimation from "../../assets/lottie/login-animation.json";
+import { motion } from "framer-motion";
+import { FiMoon, FiSun } from "react-icons/fi";
 
 function Auth() {
   // State variables for handling input fields
   const navigate = useNavigate();
-  const { setUserInfo } = useAppStore();
+  const { setUserInfo, isDarkMode, toggleDarkMode, setIsDarkMode } = useAppStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // Check localStorage for dark mode preference on mount
+  useEffect(() => {
+    // Get dark mode setting from localStorage if available
+    const storedDarkMode = localStorage.getItem('darkMode');
+    if (storedDarkMode !== null) {
+      setIsDarkMode(storedDarkMode === 'true');
+    }
+  }, [setIsDarkMode]);
+
+  // Apply dark mode class to body
+  useEffect(() => {
+    if (isDarkMode) {
+      document.body.classList.add('dark');
+      localStorage.setItem('darkMode', 'true');
+    } else {
+      document.body.classList.remove('dark');
+      localStorage.setItem('darkMode', 'false');
+    }
+  }, [isDarkMode]);
 
   const validateLogin = () => {
     if (!email.trim().length) {
@@ -52,15 +76,14 @@ function Auth() {
 
   const handleLogin = async () => {
     if (!validateLogin()) return;
-
+    
     try {
+      setIsLoading(true);
       const response = await apiClient.post(
         LOGIN_ROUTE,
         { email, password },
         { withCredentials: true }
       );
-
-      console.log({ response });
 
       if (response.data.user.id) {
         setUserInfo(response.data.user);
@@ -82,6 +105,8 @@ function Auth() {
       } else {
         toast.error("No response from the server.");
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -89,13 +114,12 @@ function Auth() {
     if (!validateSignup()) return;
 
     try {
+      setIsLoading(true);
       const response = await apiClient.post(
         SIGNUP_ROUTE,
         { email, password },
         { withCredentials: true }
       );
-
-      console.log({ response });
 
       if (response.status === 201) {
         setUserInfo(response.data.user);
@@ -114,120 +138,187 @@ function Auth() {
         // Something else happened
         toast.error("An unexpected error occurred.");
       }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Animation variants for fade-in effects
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { 
+        duration: 0.6,
+        when: "beforeChildren",
+        staggerChildren: 0.2
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.4 }
     }
   };
 
   return (
-    // Main container to center the authentication component
-    <div className="h-[100vh] w-[100vw] flex items-center justify-center">
-      {/* Authentication card */}
-      <div className="h-[80vh] bg-white border-2 border-white text-opacity-90 shadow-2xl w-[80vw] md:w-[90vw] lg:w-[70vw] xl:w-[60vw] rounded-3xl grid xl:grid-cols-2">
-        {/* Left Section - Welcome and Form */}
-        <div className="flex flex-col gap-10 items-center justify-center">
-          {/* Welcome message with emoji */}
-          <div className="flex items-center justify-center flex-col">
-            <div className="flex items-center justify-center">
-              <h1 className="text-5xl font-bold md:text-6xl">Welcome</h1>
-              <img src={Victory} alt="victory emoji" className="h-[100px]" />
-            </div>
-            {/* Subtitle */}
-            <p className="font-medium text-center">
-              Fill in the details to get started with the best chat app!
-            </p>
+    <motion.div 
+      className="min-h-screen w-full flex flex-col bg-gray-50 dark:bg-slate-900"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
+      {/* Dark mode toggle */}
+      <motion.div 
+        className="absolute top-4 right-4 z-10"
+        variants={itemVariants}
+      >
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+          className="p-2 rounded-full bg-white dark:bg-slate-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 shadow-md transition-colors"
+          onClick={toggleDarkMode}
+          aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+        >
+          {isDarkMode ? <FiSun className="text-xl" /> : <FiMoon className="text-xl" />}
+        </motion.button>
+      </motion.div>
+
+      {/* Content container */}
+      <div className="flex-1 flex flex-col md:flex-row items-center justify-center p-4 md:p-8">
+        {/* Animation section - Shows at top on mobile, left on desktop */}
+        <motion.div 
+          className="w-full md:w-1/2 flex justify-center items-center mb-8 md:mb-0"
+          variants={itemVariants}
+        >
+          <div className="w-full max-w-md">
+            <Lottie 
+              animationData={loginAnimation} 
+              loop={true} 
+              className="w-full"
+              style={{ 
+                maxHeight: '70vh',
+                filter: isDarkMode ? 'brightness(0.9)' : 'none'
+              }}
+              aria-label="Chat login animation" 
+              renderSettings={{
+                preserveAspectRatio: 'xMidYMid slice'
+              }}
+            />
           </div>
+        </motion.div>
 
-          {/* Tabs Section - Login & Signup */}
-          <div className="flex items-center justify-center w-full">
-            <Tabs defaultValue="login" className="w-3/4">
-              {/* Tabs Navigation - Login & Signup */}
-              <TabsList className="bg-transparent rounded-none w-full">
-                <TabsTrigger
-                  value="login"
-                  className="bg-white text-black text-opacity-90 border-b-2 rounded-none w-full 
-                                    data-[state=active]:text-black data-[state=active]:font-semibold 
-                                    data-[state=active]:border-b-purple-500 p-3 transition-all duration-0 
-                                    focus:outline-none focus:ring-0 focus-visible:outline-none hover:outline-none"
-                >
-                  Login
-                </TabsTrigger>
+        {/* Form section */}
+        <motion.div 
+          className="w-full md:w-1/2 max-w-md"
+          variants={itemVariants}
+        >
+          <div className="bg-white dark:bg-slate-800 shadow-xl rounded-2xl p-6 md:p-8">
+            {/* Welcome message with emoji */}
+            <motion.div 
+              className="flex items-center justify-center flex-col mb-6"
+              variants={itemVariants}
+            >
+              <div className="flex items-center justify-center mb-2">
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-gray-100">Welcome</h1>
+                <img src={Victory} alt="victory emoji" className="h-16 md:h-20" />
+              </div>
+              {/* Subtitle */}
+              <p className="font-medium text-center text-gray-600 dark:text-gray-300">
+                Fill in the details to get started with the best chat app!
+              </p>
+            </motion.div>
 
-                <TabsTrigger
-                  value="signup"
-                  className="bg-white text-black text-opacity-90 border-b-2 rounded-none w-full 
-                                    data-[state=active]:text-black data-[state=active]:font-semibold 
-                                    data-[state=active]:border-b-purple-500 p-3 transition-all duration-0 
-                                    focus:outline-none focus:ring-0 focus-visible:outline-none hover:outline-none"
-                >
-                  Signup
-                </TabsTrigger>
-              </TabsList>
+            {/* Tabs Section - Login & Signup */}
+            <motion.div className="w-full" variants={itemVariants}>
+              <Tabs defaultValue="login" className="w-full">
+                {/* Tabs Navigation - Login & Signup */}
+                <TabsList className="bg-transparent rounded-lg w-full mb-4">
+                  <TabsTrigger
+                    value="login"
+                    className="data-[state=active]:bg-indigo-50 dark:data-[state=active]:bg-indigo-900/30 
+                      data-[state=active]:text-indigo-600 dark:data-[state=active]:text-indigo-400 rounded-lg w-full"
+                  >
+                    Login
+                  </TabsTrigger>
 
-              {/* Login Form */}
-              <TabsContent value="login" className="flex flex-col gap-5 mt-10">
-                <Input
-                  placeholder="Email"
-                  type="email"
-                  className="bg-white rounded-full p-6"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-                <Input
-                  placeholder="Password"
-                  type="password"
-                  className="bg-white rounded-full p-6"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-                <Button
-                  className="rounded-full p-6"
-                  onClick={handleLogin}
-                  aria-label="Login"
-                >
-                  Login
-                </Button>
-              </TabsContent>
+                  <TabsTrigger
+                    value="signup"
+                    className="data-[state=active]:bg-indigo-50 dark:data-[state=active]:bg-indigo-900/30 
+                      data-[state=active]:text-indigo-600 dark:data-[state=active]:text-indigo-400 rounded-lg w-full"
+                  >
+                    Signup
+                  </TabsTrigger>
+                </TabsList>
 
-              {/* Signup Form */}
-              <TabsContent value="signup" className="flex flex-col gap-5">
-                <Input
-                  placeholder="Email"
-                  type="email"
-                  className="bg-white rounded-full p-6"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-                <Input
-                  placeholder="Password"
-                  type="password"
-                  className="bg-white rounded-full p-6"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-                <Input
-                  placeholder="Confirm Password"
-                  type="password"
-                  className="bg-white rounded-full p-6"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                />
-                <Button
-                  className="rounded-full p-6"
-                  onClick={handleSignup}
-                  aria-label="Signup"
-                >
-                  Signup
-                </Button>
-              </TabsContent>
-            </Tabs>
+                {/* Login Form */}
+                <TabsContent value="login" className="flex flex-col gap-4 mt-2">
+                  <Input
+                    placeholder="Email"
+                    type="email"
+                    className="bg-gray-100 dark:bg-slate-700 rounded-lg p-5 focus:ring-indigo-500 dark:focus:ring-indigo-400"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                  <Input
+                    placeholder="Password"
+                    type="password"
+                    className="bg-gray-100 dark:bg-slate-700 rounded-lg p-5 focus:ring-indigo-500 dark:focus:ring-indigo-400"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <Button
+                    className="rounded-lg p-5 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 transition-colors mt-2"
+                    onClick={handleLogin}
+                    aria-label="Login"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Logging in..." : "Login"}
+                  </Button>
+                </TabsContent>
+
+                {/* Signup Form */}
+                <TabsContent value="signup" className="flex flex-col gap-4 mt-2">
+                  <Input
+                    placeholder="Email"
+                    type="email"
+                    className="bg-gray-100 dark:bg-slate-700 rounded-lg p-5 focus:ring-indigo-500 dark:focus:ring-indigo-400"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                  <Input
+                    placeholder="Password"
+                    type="password"
+                    className="bg-gray-100 dark:bg-slate-700 rounded-lg p-5 focus:ring-indigo-500 dark:focus:ring-indigo-400"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <Input
+                    placeholder="Confirm Password"
+                    type="password"
+                    className="bg-gray-100 dark:bg-slate-700 rounded-lg p-5 focus:ring-indigo-500 dark:focus:ring-indigo-400"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                  />
+                  <Button
+                    className="rounded-lg p-5 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 transition-colors mt-2"
+                    onClick={handleSignup}
+                    aria-label="Signup"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Signing up..." : "Signup"}
+                  </Button>
+                </TabsContent>
+              </Tabs>
+            </motion.div>
           </div>
-        </div>
-
-        {/* Right Section - Background Image (Only visible on larger screens) */}
-        <div className="hidden xl:flex justify-center items-center">
-          <img src={Background} alt="background Login" className="h-[570px]" />
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
