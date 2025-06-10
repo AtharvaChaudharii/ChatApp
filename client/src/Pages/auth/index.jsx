@@ -225,7 +225,7 @@ function Auth() {
             >
               <div className="flex items-center justify-center mb-2">
                 <h1 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-gray-100">Welcome</h1>
-                <img src={Victory} alt="victory emoji" className="h-16 md:h-20" />
+
               </div>
               {/* Subtitle */}
               <p className="font-medium text-center text-gray-600 dark:text-gray-300">
