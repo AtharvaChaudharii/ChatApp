@@ -32,8 +32,22 @@ cd polychat
 npm install
 
 # Set up environment variables
-cp .env.example .env
-# Add your Gemini API key in .env
+cd client
+touch .env
+add below inside the .env
+VITE_SERVER_URL="http://localhost:8747"
+
+cd server
+touch .env
+add below inside .env
+PORT=8747
+JWT_KEY=""
+ORIGIN="http://localhost:5173"
+DATABASE_URL=""
+GEMINI_API_KEY=""
+
 
 # Run development server
 npm run dev
+
+
