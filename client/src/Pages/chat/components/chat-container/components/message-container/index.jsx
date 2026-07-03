@@ -9,7 +9,7 @@ import moment from "moment";
 import { useEffect, useRef, useState } from "react";
 import { MdFolderZip } from "react-icons/md";
 import { IoMdArrowRoundDown } from "react-icons/io";
-import { IoCloseSharp } from "react-icons/io5";
+import { IoCloseSharp, IoCheckmark, IoCheckmarkDone } from "react-icons/io5";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { getColor } from "@/lib/utils";
 import { languages } from "@/utils/languages";
@@ -27,11 +27,20 @@ const MessageContainer = () => {
     setSelectedChatMessages,
     setFileDownloadProgress,
     setIsDownloading,
+    onlineUsers,
+    typingUsers,
   } = useAppStore();
 
   const [showImage, setShowImage] = useState(false);
   const [imageURL, setImageURL] = useState(null);
-  const [isTyping, setIsTyping] = useState(false); // For typing indicator
+
+  // Get typing status for current chat
+  const isTyping = (() => {
+    if (!selectedChatData) return false;
+    const chatId = selectedChatData._id;
+    const typingData = typingUsers[chatId];
+    return typingData && Object.keys(typingData).length > 0;
+  })();
 
   useEffect(() => {
     const getMessages = async () => {
@@ -70,23 +79,21 @@ const MessageContainer = () => {
   }, [selectedChatData, selectedChatType, setSelectedChatMessages]);
 
   useEffect(() => {
-    if (!socket) return;
-    
-    // Mock typing indicator - in a real app you would use socket events
-    const mockTypingIndicator = () => {
-      // Randomly show typing indicator sometimes
-      if (Math.random() > 0.7) {
-        setIsTyping(true);
-        setTimeout(() => setIsTyping(false), 3000);
+    if (selectedChatType === "contact" && selectedChatData && userInfo && socket) {
+      const hasUnread = selectedChatMessages.some(
+        (msg) => 
+          (msg.sender._id === selectedChatData._id || msg.sender === selectedChatData._id) && 
+          msg.messageStatus !== "read"
+      );
+      
+      if (hasUnread) {
+        socket.emit("markMessagesAsRead", {
+          senderId: selectedChatData._id,
+          recipientId: userInfo.id,
+        });
       }
-    };
-    
-    const typingInterval = setInterval(mockTypingIndicator, 10000);
-    
-    return () => {
-      clearInterval(typingInterval);
-    };
-  }, [socket]);
+    }
+  }, [selectedChatMessages, selectedChatData, selectedChatType, userInfo, socket]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -106,10 +113,6 @@ const MessageContainer = () => {
       const messageDate = moment(message.timestamp).format("YYYY-MM-DD");
       const showDate = messageDate !== lastDate;
       lastDate = messageDate;
-      
-      // Check if this is first message from this sender or a new day
-      const isFirstMessageFromSender = index === 0 || 
-        (selectedChatMessages[index-1].sender !== message.sender);
       
       return (
         <div key={index}>
@@ -233,8 +236,19 @@ const MessageContainer = () => {
             )}
           </div>
         )}
-        <div className="text-xs text-gray-400 dark:text-gray-500 mt-1 mx-1">
+        <div className="text-xs text-gray-400 dark:text-gray-500 mt-1 mx-1 flex items-center gap-1 justify-end">
           {moment(message.timestamp).format("LT")}
+          {isCurrentUser && (
+            <span className="text-lg">
+              {message.messageStatus === "read" ? (
+                <IoCheckmarkDone className="text-blue-500" />
+              ) : message.messageStatus === "delivered" ? (
+                <IoCheckmarkDone className="text-gray-400" />
+              ) : (
+                <IoCheckmark className="text-gray-400" />
+              )}
+            </span>
+          )}
         </div>
       </motion.div>
     );
@@ -242,6 +256,7 @@ const MessageContainer = () => {
 
   const renderChannelMessages = (message, index) => {
     const isCurrentUser = message.sender._id === userInfo.id;
+    const senderIsOnline = onlineUsers.includes(message.sender._id);
     
     return (
       <motion.div
@@ -309,33 +324,38 @@ const MessageContainer = () => {
         )}
         {message.sender._id !== userInfo.id ? (
           <div className="mt-1 ml-1 flex items-center justify-start gap-2">
-            <Avatar className="h-6 w-6 rounded-full overflow-hidden shadow-sm">
-              {message.sender.image && (
-                <AvatarImage
-                  src={`${HOST}/${message.sender.image}`}
-                  alt="profile"
-                  className="object-cover w-full h-full"
-                />
-              )}
-              <AvatarFallback
-                className={`uppercase h-6 w-6 text-sm flex items-center justify-center rounded-full shadow-sm ${getColor(
-                  message.sender.color
-                )}`}
-              >
-                {message.sender.firstName
-                  ? message.sender.firstName.split("").shift()
-                  : message.sender.email.split("").shift()}
-              </AvatarFallback>
-            </Avatar>
+            <div className="relative">
+              <Avatar className="h-6 w-6 rounded-full overflow-hidden shadow-sm">
+                {message.sender.image && (
+                  <AvatarImage
+                    src={`${HOST}/${message.sender.image}`}
+                    alt="profile"
+                    className="object-cover w-full h-full"
+                  />
+                )}
+                <AvatarFallback
+                  className={`uppercase h-6 w-6 text-sm flex items-center justify-center rounded-full shadow-sm ${getColor(
+                    message.sender.color
+                  )}`}
+                >
+                  {message.sender.firstName
+                    ? message.sender.firstName.split("").shift()
+                    : message.sender.email.split("").shift()}
+                </AvatarFallback>
+              </Avatar>
+              {/* Real online status dot */}
+              <span
+                className={`absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full border border-gray-50 dark:border-slate-900 ${
+                  senderIsOnline ? "bg-green-500" : "bg-gray-400"
+                }`}
+              />
+            </div>
             <span className="text-xs text-gray-600 dark:text-gray-300 font-medium">
               {`${message.sender.firstName} ${message.sender.lastName}`}
             </span>
             <span className="text-[10px] text-gray-400 dark:text-gray-500">
               {moment(message.timestamp).format("LT")}
             </span>
-            
-            {/* Online status indicator */}
-            <div className="h-2 w-2 rounded-full bg-green-400 shadow-sm"></div>
           </div>
         ) : (
           <div className="text-xs text-gray-400 dark:text-gray-500 mt-1 mr-1">
@@ -382,7 +402,7 @@ const MessageContainer = () => {
       <div className="flex flex-col space-y-1">
         {renderMessages()}
         <AnimatePresence>
-          {isTyping && selectedChatType === "contact" && typingIndicator()}
+          {isTyping && typingIndicator()}
         </AnimatePresence>
         <div ref={scrollRef} />
       </div>
@@ -398,7 +418,6 @@ const MessageContainer = () => {
             setImageURL(null);
           }}
         >
-          {/* Image Container (Prevents Closing When Clicking on Image) */}
           <motion.div 
             onClick={(e) => e.stopPropagation()}
             initial={{ scale: 0.9, opacity: 0 }}
@@ -412,14 +431,13 @@ const MessageContainer = () => {
             />
           </motion.div>
 
-          {/* Buttons */}
           <div className="flex gap-4 absolute top-5 right-5">
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               className="bg-white/10 backdrop-blur-md p-3 text-3xl rounded-full text-white cursor-pointer transition-all hover:bg-white/20"
               onClick={(e) => {
-                e.stopPropagation(); // Prevents popup from closing when clicking the button
+                e.stopPropagation();
                 downloadFile(imageURL);
               }}
             >

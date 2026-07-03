@@ -92,6 +92,13 @@ export const translateText = async (
       return text;
     }
 
+    // Skip translation if the text has no actual words/letters (e.g., only emojis or punctuation)
+    const containsLettersOrNumbers = /[a-zA-Z0-9\u00C0-\u024F\u0400-\u04FF\u0900-\u097F\u4E00-\u9FFF]/;
+    if (!containsLettersOrNumbers.test(text)) {
+      console.log("Text contains no alphanumeric characters (e.g., only emojis), skipping translation");
+      return text;
+    }
+
     // Handle known API quota exceeded
     if (apiQuotaExceeded) {
       console.log("Using fallback translation (API quota exceeded)");
@@ -116,13 +123,13 @@ export const translateText = async (
     if (forceTranslate && fromLanguage === "hi" && toLanguage === "hi") {
       // Special case for Hinglish to Hindi (transliteration)
       prompt = `Transliterate the following Hinglish text (Hindi written in Latin script) to proper Hindi in Devanagari script.
-Only return the transliterated text without any explanations or additional text.
+Only return the transliterated text without any explanations or additional text. Preserve all emojis exactly as they appear in the original text.
 
 Text to transliterate: "${text}"`;
     } else {
       // Regular translation
       prompt = `Translate the following text from ${fromLanguageName} to ${toLanguageName}.
-Only return the translated text without any explanations or additional text.
+Only return the translated text without any explanations or additional text. Preserve all emojis exactly as they appear in the original text.
 
 Text to translate: "${text}"`;
     }
@@ -267,6 +274,13 @@ export const detectLanguage = async (text, defaultLanguage = "en") => {
       console.log(
         "Text too short for reliable language detection, using default language"
       );
+      return defaultLanguage;
+    }
+
+    // Skip language detection if the text has no actual words/letters (e.g., only emojis or punctuation)
+    const containsLettersOrNumbers = /[a-zA-Z0-9\u00C0-\u024F\u0400-\u04FF\u0900-\u097F\u4E00-\u9FFF]/;
+    if (!containsLettersOrNumbers.test(text)) {
+      console.log("Text contains no alphanumeric characters (e.g., only emojis), using default language");
       return defaultLanguage;
     }
 

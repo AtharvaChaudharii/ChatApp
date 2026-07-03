@@ -1,5 +1,5 @@
 import EmojiPicker from "emoji-picker-react";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { RiAttachment2 } from "react-icons/ri";
 import { IoSend } from "react-icons/io5";
 import { RiEmojiStickerLine } from "react-icons/ri";
@@ -13,6 +13,8 @@ const MessageBar = () => {
   const emojiRef = useRef();
   const fileInputRef = useRef();
   const socket = useSocket();
+  const typingTimeoutRef = useRef(null);
+  const isTypingRef = useRef(false);
   const {
     selectedChatType,
     selectedChatData,
@@ -36,13 +38,69 @@ const MessageBar = () => {
     };
   }, [emojiRef]);
 
+  // Cleanup typing on unmount or chat change
+  useEffect(() => {
+    return () => {
+      if (isTypingRef.current && socket) {
+        emitStopTyping();
+      }
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+  }, [selectedChatData, selectedChatType]);
+
+  const emitStopTyping = useCallback(() => {
+    if (!socket || !selectedChatData) return;
+    isTypingRef.current = false;
+
+    if (selectedChatType === "contact") {
+      socket.emit("stop-typing", { recipientId: selectedChatData._id });
+    } else if (selectedChatType === "channel") {
+      socket.emit("channel-stop-typing", { channelId: selectedChatData._id });
+    }
+  }, [socket, selectedChatData, selectedChatType]);
+
+  const handleTyping = useCallback(() => {
+    if (!socket || !selectedChatData) return;
+
+    if (!isTypingRef.current) {
+      isTypingRef.current = true;
+      if (selectedChatType === "contact") {
+        socket.emit("typing", { recipientId: selectedChatData._id });
+      } else if (selectedChatType === "channel") {
+        socket.emit("channel-typing", { channelId: selectedChatData._id });
+      }
+    }
+
+    // Reset the stop-typing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    typingTimeoutRef.current = setTimeout(() => {
+      emitStopTyping();
+    }, 2000);
+  }, [socket, selectedChatData, selectedChatType, emitStopTyping]);
+
   const handleAddEmoji = (emoji) => {
     setMessage((msg) => msg + emoji.emoji);
+    handleTyping();
+  };
+
+  const handleInputChange = (e) => {
+    setMessage(e.target.value);
+    handleTyping();
   };
 
   const handleSendMessage = async () => {
     if (message.trim() === "") return;
     
+    // Stop typing indicator when sending
+    emitStopTyping();
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
     if (selectedChatType === "contact") {
       socket.emit("sendMessage", {
         sender: userInfo.id,
@@ -125,7 +183,7 @@ const MessageBar = () => {
           placeholder="Type a message..."
           className="flex-1 py-3 px-5 bg-transparent rounded-full focus:outline-none resize-none text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
           value={message}
-          onChange={(e) => setMessage(e.target.value)}
+          onChange={handleInputChange}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();

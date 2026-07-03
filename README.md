@@ -20,9 +20,10 @@
 | **Backend**    | Node.js, Express, Socket.io |
 | **AI**         | Gemini Pro API |
 | **Database**   | MongoDB |
-| **DevOps**     | Git, GitHub |
+| **DevOps**     | Git, GitHub 
 
 ## Installation ⚙️
+
 
 ### Local Development Setup
 ```bash

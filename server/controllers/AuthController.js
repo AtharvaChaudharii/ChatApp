@@ -19,7 +19,7 @@ export const signup = async (request, response, next) => {
   try {
     const { email, password } = request.body;
     if (!email || !password) {
-      return response.status(400).send("Email and Password are required.");
+      return response.status(400).json({ message: "Email and Password are required." });
     }
     const user = await User.create({ email, password });
     response.cookie("jwt", createToken(email, user.id), {
@@ -36,7 +36,16 @@ export const signup = async (request, response, next) => {
     });
   } catch (error) {
     console.log(error);
-    return response.status(500).send("Internal Server Error.");
+    // MongoDB duplicate key error (email already exists)
+    if (error.code === 11000) {
+      return response.status(409).json({ message: "Email already exists. Please login instead." });
+    }
+    // Mongoose validation errors
+    if (error.name === "ValidationError") {
+      const messages = Object.values(error.errors).map((e) => e.message);
+      return response.status(400).json({ message: messages.join(", ") });
+    }
+    return response.status(500).json({ message: "Internal Server Error. Please try again later." });
   }
 };
 
@@ -45,19 +54,19 @@ export const login = async (request, response) => {
     const { email, password } = request.body;
 
     if (!email || !password) {
-      return response.status(400).send("Email and Password are required.");
+      return response.status(400).json({ message: "Email and Password are required." });
     }
 
     // Check if user exists
     const user = await User.findOne({ email });
     if (!user) {
-      return response.status(404).send("Invalid Email. Please sign up first.");
+      return response.status(404).json({ message: "No account found with this email. Please sign up first." });
     }
 
     // Validate password
     const auth = await compare(password, user.password);
     if (!auth) {
-      return response.status(400).send("Invalid Password.");
+      return response.status(400).json({ message: "Incorrect password. Please try again." });
     }
 
     // Generate JWT and set as a cookie
@@ -81,7 +90,7 @@ export const login = async (request, response) => {
     });
   } catch (error) {
     console.error("Login Error:", error);
-    return response.status(500).send("Internal Server Error.");
+    return response.status(500).json({ message: "Internal Server Error. Please try again later." });
   }
 };
 
@@ -89,7 +98,7 @@ export const getUserInfo = async (request, response, next) => {
   try {
     const userData = await User.findById(request.userId);
     if (!userData) {
-      return response.status(404).send("User with the given mail not found");
+      return response.status(404).json({ message: "User not found." });
     }
     return response.status(200).json({
       id: userData.id,
@@ -102,8 +111,8 @@ export const getUserInfo = async (request, response, next) => {
       preferredLanguage: userData.preferredLanguage,
     });
   } catch (error) {
-    console.error("Error during login:", error);
-    return response.status(500).send("Internal Server Error.");
+    console.error("Error getting user info:", error);
+    return response.status(500).json({ message: "Internal Server Error." });
   }
 };
 
@@ -114,7 +123,7 @@ export const updateProfile = async (request, response) => {
     if (!lastName || !firstName) {
       return response
         .status(400)
-        .send("lastName, firstName, and color are required.");
+        .json({ message: "First name and last name are required." });
     }
 
     const userData = await User.findByIdAndUpdate(
@@ -140,22 +149,20 @@ export const updateProfile = async (request, response) => {
       preferredLanguage: userData.preferredLanguage,
     });
   } catch (error) {
-    console.error("Error during login:", error);
-    return response.status(500).send("Internal Server Error.");
+    console.error("Error updating profile:", error);
+    return response.status(500).json({ message: "Internal Server Error." });
   }
 };
 
 export const addProfileImage = async (request, response) => {
   try {
     if (!request.file) {
-      return response.status(400).send("Image is required.");
+      return response.status(400).json({ message: "Image is required." });
     }
     const date = Date.now();
     let fileName =
       "uploads/profiles/" + date + path.extname(request.file.originalname);
     renameSync(request.file.path, fileName);
-    // const imageUrl = `http://localhost:3004/${fileName}`; // Hardcoded URL
-    // console.log("Image URL:", imageUrl);
     const updatedUser = await User.findByIdAndUpdate(
       request.userId,
       { image: fileName },
@@ -167,7 +174,7 @@ export const addProfileImage = async (request, response) => {
     });
   } catch (error) {
     console.error("Error adding profile image:", error);
-    return response.status(500).send("Internal Server Error.");
+    return response.status(500).json({ message: "Internal Server Error." });
   }
 };
 
@@ -175,7 +182,7 @@ export const removeProfileImage = async (request, response) => {
   try {
     const user = await User.findById(request.userId);
     if (!user) {
-      return response.status(404).send("User not found");
+      return response.status(404).json({ message: "User not found." });
     }
 
     if (user.image) {
@@ -191,10 +198,10 @@ export const removeProfileImage = async (request, response) => {
     user.image = null;
     await user.save();
 
-    return response.status(200).send("Image removed successfully");
+    return response.status(200).json({ message: "Image removed successfully." });
   } catch (error) {
     console.error("Error in removeProfileImage:", error);
-    return response.status(500).send("Internal Server Error.");
+    return response.status(500).json({ message: "Internal Server Error." });
   }
 };
 
@@ -202,9 +209,9 @@ export const logout = async (request, response) => {
   try {
     response.cookie("jwt", "", { maxAge: 1, secure: true, sameSite: "None" });
 
-    return response.status(200).send("Logout Successfull.");
+    return response.status(200).json({ message: "Logout successful." });
   } catch (error) {
-    console.error("Error in removeProfileImage:", error);
-    return response.status(500).send("Internal Server Error.");
+    console.error("Error in logout:", error);
+    return response.status(500).json({ message: "Internal Server Error." });
   }
 };

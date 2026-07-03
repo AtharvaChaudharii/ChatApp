@@ -12,6 +12,44 @@ export const createChatSlice = (set, get) => ({
   channels: [],
   setChannels: (channels) => set({ channels }),
 
+  // Privacy & Relationships
+  friends: [],
+  setFriends: (friends) => set({ friends }),
+  
+  friendRequests: [],
+  setFriendRequests: (friendRequests) => set({ friendRequests }),
+  
+  sentFriendRequests: [],
+  setSentFriendRequests: (sentFriendRequests) => set({ sentFriendRequests }),
+
+  channelInvites: [],
+  setChannelInvites: (channelInvites) => set({ channelInvites }),
+
+  // Online status
+  onlineUsers: [],
+  setOnlineUsers: (onlineUsers) => set({ onlineUsers }),
+
+  // Typing indicators
+  typingUsers: {}, // { recipientId/channelId: { senderId: senderName, ... } }
+  setTypingUser: (chatId, senderId, senderName) => {
+    const typingUsers = { ...get().typingUsers };
+    if (!typingUsers[chatId]) {
+      typingUsers[chatId] = {};
+    }
+    typingUsers[chatId][senderId] = senderName || "Someone";
+    set({ typingUsers });
+  },
+  removeTypingUser: (chatId, senderId) => {
+    const typingUsers = { ...get().typingUsers };
+    if (typingUsers[chatId]) {
+      delete typingUsers[chatId][senderId];
+      if (Object.keys(typingUsers[chatId]).length === 0) {
+        delete typingUsers[chatId];
+      }
+    }
+    set({ typingUsers });
+  },
+
   setIsUploading: (isUploading) => set({ isUploading }),
   setIsDownloading: (isDownloading) => set({ isDownloading }),
 
@@ -42,6 +80,11 @@ export const createChatSlice = (set, get) => ({
     set({ channels: [channel, ...channels] });
   },
 
+  removeChannel: (channelId) => {
+    const channels = get().channels.filter((c) => c._id !== channelId);
+    set({ channels });
+  },
+
   closeChat: () =>
     set({
       selectedChatData: undefined,
@@ -69,6 +112,40 @@ export const createChatSlice = (set, get) => ({
         },
       ],
     });
+  },
+
+  markMessagesAsRead: (recipientId) => {
+    const messages = get().selectedChatMessages;
+    // We only mark messages as read if the current selected chat matches
+    // and if the message was sent to the current user (which means sender == recipientId of the event)
+    const updatedMessages = messages.map(msg => {
+      // If the message was sent BY the person we are chatting with, it means we have read it.
+      // Wait, if we are marking messages as read, the backend updates all messages where sender=recipientId, recipient=me.
+      // For the UI, we just update the status of messages sent by recipientId.
+      if (
+        (msg.sender._id === recipientId || msg.sender === recipientId) &&
+        msg.messageStatus !== "read"
+      ) {
+        return { ...msg, messageStatus: "read" };
+      }
+      return msg;
+    });
+    set({ selectedChatMessages: updatedMessages });
+  },
+
+  markMyMessagesAsRead: () => {
+    // This is called when we receive a 'messagesRead' socket event, meaning the OTHER person read OUR messages.
+    const messages = get().selectedChatMessages;
+    const updatedMessages = messages.map(msg => {
+      if (
+        (msg.sender._id === get().userInfo.id || msg.sender === get().userInfo.id) &&
+        msg.messageStatus !== "read"
+      ) {
+        return { ...msg, messageStatus: "read" };
+      }
+      return msg;
+    });
+    set({ selectedChatMessages: updatedMessages });
   },
   addChannelInChannelList: (message) => {
     const channels = get().channels;

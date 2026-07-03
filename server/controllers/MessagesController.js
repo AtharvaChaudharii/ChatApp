@@ -9,7 +9,7 @@ export const getMessages = async (request, response) => {
     const user2 = request.body.id;
 
     if (!user1 || !user2) {
-      return response.status(400).send("Both User ID's are required.");
+      return response.status(400).json({ message: "Both User ID's are required." });
     }
 
     // Get the current user's preferred language
@@ -117,14 +117,14 @@ export const getMessages = async (request, response) => {
     return response.status(200).json({ messages: processedMessages });
   } catch (error) {
     console.error("Error in getMessages:", error);
-    return response.status(500).send("Internal Server Error.");
+    return response.status(500).json({ message: "Internal Server Error." });
   }
 };
 
 export const uploadFile = async (request, response) => {
   try {
     if (!request.file) {
-      return response.status(400).send("File is Required");
+      return response.status(400).json({ message: "File is Required" });
     }
     const date = Date.now();
     let fileDir = `uploads/files/${date}`;
@@ -136,6 +136,6 @@ export const uploadFile = async (request, response) => {
     return response.status(200).json({ filePath: fileName });
   } catch (error) {
     console.error("Error in getMessages:", error);
-    return response.status(500).send("Internal Server Error.");
+    return response.status(500).json({ message: "Internal Server Error." });
   }
 };

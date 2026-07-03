@@ -157,9 +157,9 @@ function Profile() {
     } catch (error) {
       console.error(
         "Error deleting image:",
-        error.response?.data || error.message
+        error.response?.data?.message || error.message
       );
-      toast.error(error.response?.data || "Failed to delete profile image.");
+      toast.error(error.response?.data?.message || "Failed to delete profile image.");
     }
   };
 

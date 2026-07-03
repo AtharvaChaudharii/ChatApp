@@ -4,6 +4,10 @@ import {
   createChannel,
   getChannelMessages,
   getUserChannels,
+  leaveChannel,
+  getChannelInvites,
+  acceptChannelInvite,
+  rejectChannelInvite
 } from "../controllers/ChannelController.js";
 
 const channelRoutes = Router();
@@ -15,4 +19,9 @@ channelRoutes.get(
   verifyToken,
   getChannelMessages
 );
+channelRoutes.delete("/leave-channel/:channelId", verifyToken, leaveChannel);
+channelRoutes.get("/get-channel-invites", verifyToken, getChannelInvites);
+channelRoutes.post("/accept-channel-invite", verifyToken, acceptChannelInvite);
+channelRoutes.post("/reject-channel-invite", verifyToken, rejectChannelInvite);
+
 export default channelRoutes;

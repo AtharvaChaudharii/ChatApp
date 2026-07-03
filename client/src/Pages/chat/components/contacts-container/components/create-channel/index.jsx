@@ -34,10 +34,16 @@ const CreateChannel = () => {
 
   useEffect(() => {
     const getData = async () => {
-      const response = await apiClient.get(GET_ALL_CONTACTS_ROUTES, {
-        withCredentials: true,
-      });
-      setAllContacts(response.data.contacts);
+      try {
+        const response = await apiClient.get(GET_ALL_CONTACTS_ROUTES, {
+          withCredentials: true,
+        });
+        if (response.data.contacts) {
+          setAllContacts(response.data.contacts);
+        }
+      } catch (error) {
+        console.log(error);
+      }
     };
     getData();
   }, []);

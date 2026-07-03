@@ -95,15 +95,12 @@ function Auth() {
       }
     } catch (error) {
       if (error.response) {
-        if (error.response.status === 404) {
-          toast.error("Email not found. Please sign up first.");
-        } else if (error.response.status === 401) {
-          toast.error("Incorrect password. Please try again.");
-        } else {
-          toast.error(error.response.data.message || "Login failed!");
-        }
+        const errorMessage = error.response.data?.message || error.response.data || "Login failed!";
+        toast.error(errorMessage);
+      } else if (error.request) {
+        toast.error("No response from the server. Please check your connection.");
       } else {
-        toast.error("No response from the server.");
+        toast.error("An unexpected error occurred.");
       }
     } finally {
       setIsLoading(false);
@@ -128,14 +125,11 @@ function Auth() {
       }
     } catch (error) {
       if (error.response) {
-        // Server responded with an error
-        const errorMessage = error.response.data.message || "Signup failed!";
+        const errorMessage = error.response.data?.message || error.response.data || "Signup failed!";
         toast.error(errorMessage);
       } else if (error.request) {
-        // Request was made but no response was received
-        toast.error("No response from the server. Please try again.");
+        toast.error("No response from the server. Please check your connection.");
       } else {
-        // Something else happened
         toast.error("An unexpected error occurred.");
       }
     } finally {

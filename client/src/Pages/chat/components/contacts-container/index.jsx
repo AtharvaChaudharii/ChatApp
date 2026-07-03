@@ -9,6 +9,7 @@ import {
 import { useAppStore } from "@/store/index.js";
 import ContactList from "@/components/contact-list.jsx";
 import CreateChannel from "./components/create-channel/index.jsx";
+import PendingRequests from "./components/pending-requests/index.jsx";
 
 const ContactsContainer = () => {
   const {
@@ -44,8 +45,9 @@ const ContactsContainer = () => {
   return (
     // <div>
     <div className="relative md:w-[35vw] lg:w-[30vw] xl:w-[20vw] bg-[#1b1c24] border-r-2 border-gray-2 border-[#2f303b] w-full">
-      <div className="pt-3">
+      <div className="pt-3 flex justify-between items-center pr-5">
         <Logo />
+        <PendingRequests />
       </div>
       <div className="my-5">
         <div className="flex items-center justify-between pr-10">

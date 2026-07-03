@@ -24,9 +24,47 @@ export const SocketProvider = ({ children }) => {
         console.log("Connected to socket server");
       });
 
-      // Properly defined event handlers that access store when events fire
+      // === ONLINE STATUS EVENTS ===
+      socket.current.on("online-users", (onlineUserIds) => {
+        const { setOnlineUsers } = useAppStore.getState();
+        setOnlineUsers(onlineUserIds);
+      });
+
+      socket.current.on("user-status-change", ({ userId, isOnline }) => {
+        const { onlineUsers, setOnlineUsers } = useAppStore.getState();
+        if (isOnline) {
+          if (!onlineUsers.includes(userId)) {
+            setOnlineUsers([...onlineUsers, userId]);
+          }
+        } else {
+          setOnlineUsers(onlineUsers.filter((id) => id !== userId));
+        }
+      });
+
+      // === TYPING INDICATOR EVENTS (DM) ===
+      socket.current.on("user-typing", ({ senderId }) => {
+        const { setTypingUser } = useAppStore.getState();
+        setTypingUser(senderId, senderId, null);
+      });
+
+      socket.current.on("user-stop-typing", ({ senderId }) => {
+        const { removeTypingUser } = useAppStore.getState();
+        removeTypingUser(senderId, senderId);
+      });
+
+      // === TYPING INDICATOR EVENTS (CHANNEL) ===
+      socket.current.on("channel-user-typing", ({ channelId, senderId, senderName }) => {
+        const { setTypingUser } = useAppStore.getState();
+        setTypingUser(channelId, senderId, senderName);
+      });
+
+      socket.current.on("channel-user-stop-typing", ({ channelId, senderId }) => {
+        const { removeTypingUser } = useAppStore.getState();
+        removeTypingUser(channelId, senderId);
+      });
+
+      // === MESSAGE EVENTS ===
       socket.current.on("receiveMessage", (message) => {
-        // Get fresh state from the store when the event fires
         const {
           selectedChatData,
           selectedChatType,
@@ -46,7 +84,6 @@ export const SocketProvider = ({ children }) => {
       });
 
       socket.current.on("receive-channel-message", (message) => {
-        // Get fresh state from the store when the event fires
         const {
           selectedChatData,
           selectedChatType,
@@ -63,124 +100,74 @@ export const SocketProvider = ({ children }) => {
         addChannelInChannelList(message);
       });
 
-      // Add listeners for the translation events
+      // === READ RECEIPTS ===
+      socket.current.on("messagesRead", ({ recipientId }) => {
+        const { markMyMessagesAsRead } = useAppStore.getState();
+        markMyMessagesAsRead();
+      });
+
+      // === TRANSLATION EVENTS ===
       socket.current.on("messageTranslated", (translatedMessage) => {
         try {
-          console.log(
-            "Received translated message in socket context:",
-            translatedMessage
-          );
-          // Get fresh state from the store when the event fires
+          console.log("Received translated message:", translatedMessage);
           const { userInfo, selectedChatMessages, setSelectedChatMessages } =
             useAppStore.getState();
 
-          // Only update messages for the recipient, not the sender
           if (
             translatedMessage.sender &&
             translatedMessage.sender._id === userInfo.id
           ) {
-            console.log(
-              "Ignoring translation of own message in socket context"
-            );
             return;
           }
 
-          // Update the message in the chat with the translation
           if (translatedMessage && translatedMessage._id) {
-            console.log("Updating message with translation in socket context");
-
-            // Safety check for selectedChatMessages
-            if (!Array.isArray(selectedChatMessages)) {
-              console.error(
-                "selectedChatMessages is not an array:",
-                selectedChatMessages
-              );
-              return;
-            }
+            if (!Array.isArray(selectedChatMessages)) return;
 
             const updatedMessages = selectedChatMessages.map((message) => {
               if (message && message._id === translatedMessage._id) {
-                console.log(
-                  "Found message to update with translation in socket context",
-                  message._id
-                );
                 return {
                   ...message,
                   content: translatedMessage.content || message.content,
-                  // No isTranslated flag to avoid showing translation indicators
                 };
               }
               return message;
             });
-
             setSelectedChatMessages(updatedMessages);
           }
         } catch (error) {
-          console.error(
-            "Error handling translated message in socket context:",
-            error
-          );
+          console.error("Error handling translated message:", error);
         }
       });
 
       socket.current.on("channel-message-translated", (translatedMessage) => {
         try {
-          console.log(
-            "Received translated channel message in socket context:",
-            translatedMessage
-          );
-          // Get fresh state from the store when the event fires
+          console.log("Received translated channel message:", translatedMessage);
           const { userInfo, selectedChatMessages, setSelectedChatMessages } =
             useAppStore.getState();
 
-          // Only update messages for the recipient, not the sender
           if (
             translatedMessage.sender &&
             translatedMessage.sender._id === userInfo.id
           ) {
-            console.log(
-              "Ignoring translation of own channel message in socket context"
-            );
             return;
-          } 
+          }
 
-          // Update the message in the chat with the translation
           if (translatedMessage && translatedMessage._id) {
-            console.log(
-              "Updating channel message with translation in socket context"
-            );
-
-            // Safety check for selectedChatMessages
-            if (!Array.isArray(selectedChatMessages)) {
-              console.error(
-                "selectedChatMessages is not an array:",
-                selectedChatMessages
-              );
-              return;
-            }
+            if (!Array.isArray(selectedChatMessages)) return;
 
             const updatedMessages = selectedChatMessages.map((message) => {
               if (message && message._id === translatedMessage._id) {
-                console.log(
-                  "Found channel message to update with translation in socket context",
-                  message._id
-                );
                 return {
                   ...message,
                   content: translatedMessage.content || message.content,
-                  // No isTranslated flag to avoid showing translation indicators
                 };
               }
               return message;
             });
-
             setSelectedChatMessages(updatedMessages);
           }
         } catch (error) {
-          console.error(
-            "Error handling translated channel message in socket context:",
-            error
-          );
+          console.error("Error handling translated channel message:", error);
         }
       });
 

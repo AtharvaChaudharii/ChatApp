@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import animationData, { getColor } from "@/lib/utils";
 import Lottie from "lottie-react"; // ✅ Use lottie-react
 import { apiClient } from "@/lib/api-client";
-import { HOST, SEARCH_CONTACTS_ROUTES } from "@/utils/constants";
+import { HOST, SEARCH_CONTACTS_ROUTES, SEND_FRIEND_REQUEST_ROUTE, ACCEPT_FRIEND_REQUEST_ROUTE } from "@/utils/constants";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
 import { Avatar, AvatarImage } from "@radix-ui/react-avatar";
 import { useAppStore } from "@/store";
@@ -47,10 +47,35 @@ const NewDM = () => {
   };
 
   const selectNewContact = (contact) => {
+    if (contact.relationship !== "friend") return;
     setOpenNewContactModal(false);
     setSelectedChatType("contact");
     setSelectedChatData(contact);
     setSearchedContacts([]);
+  };
+
+  const sendFriendRequest = async (targetId) => {
+    try {
+      await apiClient.post(SEND_FRIEND_REQUEST_ROUTE, { targetId }, { withCredentials: true });
+      // Update UI optimistically
+      setSearchedContacts((prev) => 
+        prev.map(c => c._id === targetId ? { ...c, relationship: "outgoing_request" } : c)
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const acceptFriendRequest = async (targetId) => {
+    try {
+      await apiClient.post(ACCEPT_FRIEND_REQUEST_ROUTE, { targetId }, { withCredentials: true });
+      // Update UI optimistically
+      setSearchedContacts((prev) => 
+        prev.map(c => c._id === targetId ? { ...c, relationship: "friend" } : c)
+      );
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
@@ -90,37 +115,76 @@ const NewDM = () => {
                 {searchedContacts.map((contact) => (
                   <div
                     key={contact._id}
-                    className="flex gap-3 items-center cursor-pointer"
-                    onClick={() => selectNewContact(contact)}
+                    className="flex justify-between items-center"
                   >
-                    <div className="w-12 h-12 relative ">
-                      <Avatar className="h-12 w-12 rounded-full overflow-hidden">
-                        {contact.image ? (
-                          <AvatarImage
-                            src={`${HOST}/${contact.image}`}
-                            alt="profile"
-                            className="object-cover w-full h-full bg-black rounded-full"
-                          />
-                        ) : (
-                          <div
-                            className={`uppercase h-12 w-12 text-lg border-[1px] flex items-center justify-center rounded-full ${getColor(
-                              contact.color
-                            )}`}
-                          >
-                            {contact.firstName
-                              ? contact.firstName.split("").shift()
-                              : contact.email.split("").shift()}
-                          </div>
-                        )}
-                      </Avatar>
+                    <div 
+                      className={`flex gap-3 items-center ${contact.relationship === 'friend' ? 'cursor-pointer' : ''}`}
+                      onClick={() => selectNewContact(contact)}
+                    >
+                      <div className="w-12 h-12 relative ">
+                        <Avatar className="h-12 w-12 rounded-full overflow-hidden">
+                          {contact.image ? (
+                            <AvatarImage
+                              src={`${HOST}/${contact.image}`}
+                              alt="profile"
+                              className="object-cover w-full h-full bg-black rounded-full"
+                            />
+                          ) : (
+                            <div
+                              className={`uppercase h-12 w-12 text-lg border-[1px] flex items-center justify-center rounded-full ${getColor(
+                                contact.color
+                              )}`}
+                            >
+                              {contact.firstName
+                                ? contact.firstName.split("").shift()
+                                : contact.email.split("").shift()}
+                            </div>
+                          )}
+                        </Avatar>
+                      </div>
+                      <div className="flex flex-col">
+                        <span>
+                          {contact.firstName && contact.lastName
+                            ? `${contact.firstName} ${contact.lastName}`
+                            : contact.email}
+                        </span>
+                        <span className="text-xs">{contact.email}</span>
+                      </div>
                     </div>
-                    <div className="flex flex-col">
-                      <span>
-                        {contact.firstName && contact.lastName
-                          ? `${contact.firstName} ${contact.lastName}`
-                          : contact.email}
-                      </span>
-                      <span className="text-xs">{contact.email}</span>
+                    
+                    <div className="flex items-center ml-2">
+                      {contact.relationship === "none" && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); sendFriendRequest(contact._id); }}
+                          className="bg-indigo-500 hover:bg-indigo-600 text-white text-xs px-3 py-1.5 rounded-full transition-colors"
+                        >
+                          Add Friend
+                        </button>
+                      )}
+                      {contact.relationship === "outgoing_request" && (
+                        <button
+                          disabled
+                          className="bg-gray-700 text-gray-300 text-xs px-3 py-1.5 rounded-full"
+                        >
+                          Pending
+                        </button>
+                      )}
+                      {contact.relationship === "incoming_request" && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); acceptFriendRequest(contact._id); }}
+                          className="bg-green-500 hover:bg-green-600 text-white text-xs px-3 py-1.5 rounded-full transition-colors"
+                        >
+                          Accept
+                        </button>
+                      )}
+                      {contact.relationship === "friend" && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); selectNewContact(contact); }}
+                          className="bg-purple-500 hover:bg-purple-600 text-white text-xs px-3 py-1.5 rounded-full transition-colors"
+                        >
+                          Message
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}

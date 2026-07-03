@@ -6,6 +6,7 @@ const channelSchema = new mongoose.Schema({
     required: true,
   },
   members: [{ type: mongoose.Schema.ObjectId, ref: "Users", required: true }],
+  pendingMembers: [{ type: mongoose.Schema.ObjectId, ref: "Users" }],
   admin: { type: mongoose.Schema.ObjectId, ref: "Users", required: true },
   messages: [
     { type: mongoose.Schema.ObjectId, ref: "Messages", required: false },
