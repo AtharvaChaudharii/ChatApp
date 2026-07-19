@@ -2,9 +2,8 @@ import jwt from "jsonwebtoken";
 import User from "../models/UserModel.js";
 // import { compare } from "bcrypt";
 import { compare } from "bcryptjs";
-import { renameSync, unlinkSync } from "fs";
 const maxAge = 3 * 24 * 60 * 60 * 1000; //valid for 3days
-import fs from "fs";
+import fs, { promises as fsPromises } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 // import { userInfo } from "os";
@@ -162,7 +161,7 @@ export const addProfileImage = async (request, response) => {
     const date = Date.now();
     let fileName =
       "uploads/profiles/" + date + path.extname(request.file.originalname);
-    renameSync(request.file.path, fileName);
+    await fsPromises.rename(request.file.path, fileName);
     const updatedUser = await User.findByIdAndUpdate(
       request.userId,
       { image: fileName },
@@ -187,10 +186,14 @@ export const removeProfileImage = async (request, response) => {
 
     if (user.image) {
       const filePath = path.join(process.cwd(), user.image);
-      if (fs.existsSync(filePath)) {
-        unlinkSync(filePath);
-      } else {
-        console.warn("File not found:", filePath);
+      try {
+        await fsPromises.unlink(filePath);
+      } catch (err) {
+        if (err.code === 'ENOENT') {
+          console.warn("File not found:", filePath);
+        } else {
+          throw err;
+        }
       }
     }
 

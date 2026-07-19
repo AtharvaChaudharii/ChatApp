@@ -1,6 +1,6 @@
 import Message from "../models/MessagesModel.js";
 import User from "../models/UserModel.js";
-import { mkdirSync, renameSync } from "fs";
+import { promises as fsPromises } from "fs";
 import { translateText } from "../services/translationService.js";
 
 export const getMessages = async (request, response) => {
@@ -130,8 +130,8 @@ export const uploadFile = async (request, response) => {
     let fileDir = `uploads/files/${date}`;
     let fileName = `${fileDir}/${request.file.originalname}`;
 
-    mkdirSync(fileDir, { recursive: true });
-    renameSync(request.file.path, fileName);
+    await fsPromises.mkdir(fileDir, { recursive: true });
+    await fsPromises.rename(request.file.path, fileName);
 
     return response.status(200).json({ filePath: fileName });
   } catch (error) {

@@ -199,7 +199,7 @@ function Auth() {
                 filter: isDarkMode ? 'brightness(0.9)' : 'none'
               }}
               aria-label="Chat login animation" 
-              renderSettings={{
+              rendererSettings={{
                 preserveAspectRatio: 'xMidYMid slice'
               }}
             />

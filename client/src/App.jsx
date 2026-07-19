@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"; // Added Route import
-import Auth from "./Pages/auth";
-import Chat from "./Pages/chat";
-import Profile from "./Pages/profile";
 import { useAppStore } from "./store";
 import { apiClient } from "./lib/api-client";
 import { GET_USER_INFO } from "./utils/constants";
+
+// Lazy-loaded route components for code splitting
+const Auth = lazy(() => import("./Pages/auth"));
+const Chat = lazy(() => import("./Pages/chat"));
+const Profile = lazy(() => import("./Pages/profile"));
 
 const PrivateRoute = ({ children }) => {
   const { userInfo } = useAppStore();
@@ -56,38 +58,40 @@ function App() {
   }, [userInfo, setUserInfo]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className="flex h-screen w-full items-center justify-center bg-white dark:bg-slate-900 text-indigo-600 font-medium text-xl">Checking session...</div>;
   }
 
   return (
     <BrowserRouter>
-      <Routes>
-        <Route
-          path="/auth"
-          element={
-            <AuthRoute>
-              <Auth />
-            </AuthRoute>
-          }
-        />
-        <Route
-          path="/profile"
-          element={
-            <PrivateRoute>
-              <Profile />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/chat"
-          element={
-            <PrivateRoute>
-              <Chat />
-            </PrivateRoute>
-          }
-        />
-        <Route path="*" element={<Navigate to="/auth" />} />
-      </Routes>
+      <Suspense fallback={<div className="flex h-screen items-center justify-center bg-white dark:bg-slate-900 text-indigo-600 font-medium text-xl">Loading PolyChat...</div>}>
+        <Routes>
+          <Route
+            path="/auth"
+            element={
+              <AuthRoute>
+                <Auth />
+              </AuthRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <PrivateRoute>
+                <Profile />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/chat"
+            element={
+              <PrivateRoute>
+                <Chat />
+              </PrivateRoute>
+            }
+          />
+          <Route path="*" element={<Navigate to="/auth" />} />
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }

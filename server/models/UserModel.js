@@ -52,9 +52,16 @@ const userSchema = new mongoose.Schema({
 userSchema.pre("save", async function (next) {
   ///.pre is a type of middleware provide by mongoose and 
   //do not use arrow function because we need to access data through (this) keyword
+  if (!this.isModified("password")) {
+    return next();
+  }
   const salt = await genSalt();
   this.password = await hash(this.password, salt);
   next();
 });
+// Indexes to optimize regex search queries (Index Scan instead of COLLSCAN)
+userSchema.index({ firstName: 1 });
+userSchema.index({ lastName: 1 });
+
 const User = mongoose.model("Users", userSchema);
 export default User;

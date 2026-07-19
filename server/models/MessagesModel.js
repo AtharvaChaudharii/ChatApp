@@ -53,6 +53,10 @@ const messageSchema = new mongoose.Schema({
   },
 });
 
+// Compound indexes for fast message retrieval and sorting
+messageSchema.index({ sender: 1, recipient: 1, timestamp: 1 });
+messageSchema.index({ recipient: 1, sender: 1, timestamp: 1 });
+
 const Message = mongoose.model("Messages", messageSchema);
 
 export default Message;

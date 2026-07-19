@@ -31,5 +31,10 @@ channelSchema.pre("findOneAndUpdate", function (next) {
   next();
 });
 
+// Indexes for efficient channel retrieval and sorting
+channelSchema.index({ admin: 1, updatedAt: -1 });
+channelSchema.index({ members: 1, updatedAt: -1 });
+channelSchema.index({ pendingMembers: 1, updatedAt: -1 });
+
 const Channel = mongoose.model("Channels", channelSchema);
 export default Channel;

@@ -1,5 +1,5 @@
-import EmojiPicker from "emoji-picker-react";
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback, Suspense, lazy } from "react";
+const EmojiPicker = lazy(() => import("emoji-picker-react"));
 import { RiAttachment2 } from "react-icons/ri";
 import { IoSend } from "react-icons/io5";
 import { RiEmojiStickerLine } from "react-icons/ri";
@@ -228,11 +228,13 @@ const MessageBar = () => {
                 exit={{ opacity: 0, y: 10 }}
                 transition={{ duration: 0.2 }}
               >
-                <EmojiPicker
-                  theme={isDarkMode ? "dark" : "light"}
-                  onEmojiClick={handleAddEmoji}
-                  autoFocusSearch={false}
-                />
+                <Suspense fallback={<div className="w-[300px] h-[400px] bg-white dark:bg-[#222222] rounded-xl shadow-2xl flex items-center justify-center text-sm text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-slate-700">Loading emojis...</div>}>
+                  <EmojiPicker
+                    theme={isDarkMode ? "dark" : "light"}
+                    onEmojiClick={handleAddEmoji}
+                    autoFocusSearch={false}
+                  />
+                </Suspense>
               </motion.div>
             )}
           </AnimatePresence>

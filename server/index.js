@@ -47,15 +47,13 @@ app.use("/api/contacts", contactsRoutes);
 app.use("/api/messages", messagesRoutes);
 app.use("/api/channel", channelRoutes);
 
-const server = app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
-});
-
-setupSocket(server);
-
 mongoose
   .connect(process.env.DATABASE_URL)
   .then(() => {
     console.log("Database connected Successfully");
+    const server = app.listen(port, () => {
+      console.log(`Server is running on http://localhost:${port}`);
+    });
+    setupSocket(server);
   })
   .catch((err) => console.log(err.message));

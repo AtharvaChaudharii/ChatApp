@@ -15,9 +15,10 @@ import { getColor } from "@/lib/utils";
 import { languages } from "@/utils/languages";
 import { useSocket } from "@/context/Socketcontext";
 import { motion, AnimatePresence } from "framer-motion";
+import { useVirtualizer } from "@tanstack/react-virtual";
 
 const MessageContainer = () => {
-  const scrollRef = useRef();
+  const parentRef = useRef(null);
   const socket = useSocket();
   const {
     selectedChatType,
@@ -95,11 +96,21 @@ const MessageContainer = () => {
     }
   }, [selectedChatMessages, selectedChatData, selectedChatType, userInfo, socket]);
 
+  const virtualizer = useVirtualizer({
+    count: selectedChatMessages.length + (isTyping ? 1 : 0),
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 70, // Estimate height
+    overscan: 10,
+  });
+
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollIntoView({ behavior: "smooth" });
+    const totalItems = selectedChatMessages.length + (isTyping ? 1 : 0);
+    if (totalItems > 0) {
+      setTimeout(() => {
+        virtualizer.scrollToIndex(totalItems - 1, { align: "end", behavior: "smooth" });
+      }, 50);
     }
-  }, [selectedChatMessages, isTyping]);
+  }, [selectedChatMessages.length, isTyping, virtualizer]);
 
   const checkIfImage = (filePath) => {
     const imageRegex =
@@ -107,32 +118,30 @@ const MessageContainer = () => {
     return imageRegex.test(filePath);
   };
 
-  const renderMessages = () => {
-    let lastDate = null;
-    return selectedChatMessages.map((message, index) => {
-      const messageDate = moment(message.timestamp).format("YYYY-MM-DD");
-      const showDate = messageDate !== lastDate;
-      lastDate = messageDate;
-      
-      return (
-        <div key={index}>
-          {showDate && (
-            <motion.div 
-              className="flex justify-center my-4"
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <span className="px-3 py-1 bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-gray-300 text-xs rounded-full shadow-sm">
-                {moment(message.timestamp).format("LL")}
-              </span>
-            </motion.div>
-          )}
-          {selectedChatType === "contact" && renderDMMessages(message, index)}
-          {selectedChatType === "channel" && renderChannelMessages(message, index)}
-        </div>
-      );
-    });
+  const renderMessageWithDate = (index) => {
+    const message = selectedChatMessages[index];
+    const messageDate = moment(message.timestamp).format("YYYY-MM-DD");
+    const previousMessageDate = index > 0 ? moment(selectedChatMessages[index - 1].timestamp).format("YYYY-MM-DD") : null;
+    const showDate = messageDate !== previousMessageDate;
+    
+    return (
+      <div className="px-2 md:px-4 lg:px-6">
+        {showDate && (
+          <motion.div 
+            className="flex justify-center my-4"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <span className="px-3 py-1 bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-gray-300 text-xs rounded-full shadow-sm">
+              {moment(message.timestamp).format("LL")}
+            </span>
+          </motion.div>
+        )}
+        {selectedChatType === "contact" && renderDMMessages(message, index)}
+        {selectedChatType === "channel" && renderChannelMessages(message, index)}
+      </div>
+    );
   };
 
   const downloadFile = async (url) => {
@@ -394,17 +403,45 @@ const MessageContainer = () => {
 
   return (
     <motion.div 
-      className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-2 md:px-4 lg:px-6 bg-gray-50 dark:bg-slate-900 md:w-[65vw] lg:w-[70vw] xl:w-[80vw] w-full"
+      ref={parentRef}
+      className="flex-1 overflow-y-auto overflow-x-hidden py-4 bg-gray-50 dark:bg-slate-900 md:w-[65vw] lg:w-[70vw] xl:w-[80vw] w-full"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <div className="flex flex-col space-y-1">
-        {renderMessages()}
-        <AnimatePresence>
-          {isTyping && typingIndicator()}
-        </AnimatePresence>
-        <div ref={scrollRef} />
+      <div
+        style={{
+          height: `${virtualizer.getTotalSize()}px`,
+          width: '100%',
+          position: 'relative',
+        }}
+      >
+        {virtualizer.getVirtualItems().map((virtualItem) => {
+          const isTypingItem = isTyping && virtualItem.index === selectedChatMessages.length;
+          
+          return (
+            <div
+              key={virtualItem.key}
+              data-index={virtualItem.index}
+              ref={virtualizer.measureElement}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                transform: `translateY(${virtualItem.start}px)`,
+              }}
+            >
+              {isTypingItem ? (
+                <div className="px-2 md:px-4 lg:px-6">
+                  {typingIndicator()}
+                </div>
+              ) : (
+                renderMessageWithDate(virtualItem.index)
+              )}
+            </div>
+          );
+        })}
       </div>
       
       {showImage && (
