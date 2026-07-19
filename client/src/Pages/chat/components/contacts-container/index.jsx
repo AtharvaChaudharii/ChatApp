@@ -103,7 +103,7 @@ const Logo = () => {
           fill="#a16ee8"
         ></path>{" "}
       </svg>
-      <span className="text-3xl font-semibold ">Polychat</span>
+      <span className="text-3xl font-semibold text-white">Polychat</span>
     </div>
   );
 };

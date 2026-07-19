@@ -51,6 +51,10 @@ function Auth() {
       toast.error("Password is required.");
       return false;
     }
+    if (password.length < 8) {
+      toast.error("Password must be at least 8 characters.");
+      return false;
+    }
     return true;
   };
 
@@ -61,6 +65,10 @@ function Auth() {
     }
     if (!password.trim().length) {
       toast.error("Password is required.");
+      return false;
+    }
+    if (password.length < 8) {
+      toast.error("Password must be at least 8 characters.");
       return false;
     }
     if (!confirmPassword.trim().length) {
@@ -229,7 +237,11 @@ function Auth() {
 
             {/* Tabs Section - Login & Signup */}
             <motion.div className="w-full" variants={itemVariants}>
-              <Tabs defaultValue="login" className="w-full">
+              <Tabs defaultValue="login" className="w-full" onValueChange={() => {
+                setEmail("");
+                setPassword("");
+                setConfirmPassword("");
+              }}>
                 {/* Tabs Navigation - Login & Signup */}
                 <TabsList className="bg-transparent rounded-lg w-full mb-4">
                   <TabsTrigger

@@ -57,7 +57,7 @@ const ProfileInfo = () => {
             )}
           </Avatar>
         </div>
-        <div>
+        <div className="text-white">
           {userInfo.firstName && userInfo.lastName
             ? `${userInfo.firstName} ${userInfo.lastName}`
             : ""}

@@ -18,7 +18,7 @@ import {
 } from "@/utils/constants";
 import { Avatar, AvatarImage } from "@radix-ui/react-avatar";
 import { getColor } from "@/lib/utils";
-import { ScrollArea } from "@radix-ui/react-scroll-area";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAppStore } from "@/store";
 
 const PendingRequests = () => {
@@ -44,6 +44,10 @@ const PendingRequests = () => {
       console.error(error);
     }
   };
+
+  useEffect(() => {
+    fetchRequests();
+  }, []);
 
   useEffect(() => {
     if (open) {

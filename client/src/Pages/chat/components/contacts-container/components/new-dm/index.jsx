@@ -4,7 +4,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaPlus } from "react-icons/fa";
 import {
   Dialog,
@@ -18,7 +18,7 @@ import animationData, { getColor } from "@/lib/utils";
 import Lottie from "lottie-react"; // ✅ Use lottie-react
 import { apiClient } from "@/lib/api-client";
 import { HOST, SEARCH_CONTACTS_ROUTES, SEND_FRIEND_REQUEST_ROUTE, ACCEPT_FRIEND_REQUEST_ROUTE } from "@/utils/constants";
-import { ScrollArea } from "@radix-ui/react-scroll-area";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarImage } from "@radix-ui/react-avatar";
 import { useAppStore } from "@/store";
 
@@ -26,13 +26,21 @@ const NewDM = () => {
   const { setSelectedChatType, setSelectedChatData } = useAppStore();
   const [openNewContactModal, setOpenNewContactModal] = useState(false);
   const [searchedContacts, setSearchedContacts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const searchContacts = async (searchTerm) => {
+  useEffect(() => {
+    if (searchTerm.length === 0) {
+      setSearchedContacts([]);
+    }
+  }, [searchTerm]);
+
+  const searchContacts = async (term) => {
+    setSearchTerm(term);
     try {
-      if (searchTerm.length > 0) {
+      if (term.length > 0) {
         const response = await apiClient.post(
           SEARCH_CONTACTS_ROUTES,
-          { searchTerm },
+          { searchTerm: term },
           { withCredentials: true }
         );
         if (response.status === 200 && response.data.contacts) {
@@ -94,7 +102,16 @@ const NewDM = () => {
         </Tooltip>
       </TooltipProvider>
 
-      <Dialog open={openNewContactModal} onOpenChange={setOpenNewContactModal}>
+      <Dialog 
+        open={openNewContactModal} 
+        onOpenChange={(open) => {
+          setOpenNewContactModal(open);
+          if (!open) {
+            setSearchedContacts([]);
+            setSearchTerm("");
+          }
+        }}
+      >
         <DialogContent className="bg-[#181920] border-none text-white w-[400px] h-[400px] flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex justify-center">
@@ -106,6 +123,7 @@ const NewDM = () => {
             <Input
               placeholder="Search Contacts"
               className="rounded-lg p-6 bg-[#2c2e3b] border-none"
+              value={searchTerm}
               onChange={(e) => searchContacts(e.target.value)}
             />
           </div>
