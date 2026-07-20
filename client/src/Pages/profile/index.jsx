@@ -169,9 +169,9 @@ function Profile() {
         <div onClick={handleNavigate}>
           <IoArrowBack className="text-4xl text-white/90 cursor-pointer" />
         </div>
-        <div className="grid grid-cols-2">
+        <div className="flex flex-col md:grid md:grid-cols-2 gap-10 md:gap-0">
           <div
-            className="h-full w-32 md:w-48 md:h-48 relative flex justify-center items-center"
+            className="h-full w-32 md:w-48 md:h-48 relative flex justify-center items-center mx-auto md:mx-0"
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => {
               setHovered(false);
@@ -217,7 +217,7 @@ function Profile() {
               accept=".png, .svg, .jpeg, .jpg, .webp, "
             />
           </div>
-          <div className="flex min-w-32 md:min-wd-64 flex-col gap-5 text-white items-center justify-center">
+          <div className="flex min-w-32 md:min-w-64 flex-col gap-5 text-white items-center justify-center">
             <div className="w-full">
               <Input
                 placeholder="Email"
