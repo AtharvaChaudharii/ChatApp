@@ -112,7 +112,7 @@ const NewDM = () => {
           }
         }}
       >
-        <DialogContent className="bg-[#181920] border-none text-white w-[90vw] max-w-[400px] h-[400px] max-h-[80vh] flex flex-col rounded-lg">
+        <DialogContent className="bg-white dark:bg-slate-900 border-none text-gray-800 dark:text-white w-[90vw] max-w-[400px] h-[400px] max-h-[80vh] flex flex-col rounded-lg">
           <DialogHeader>
             <DialogTitle className="flex justify-center mt-4">
               Please Select a Contact
@@ -122,7 +122,7 @@ const NewDM = () => {
           <div>
             <Input
               placeholder="Search Contacts"
-              className="rounded-lg p-6 bg-[#2c2e3b] border-none"
+              className="rounded-lg p-6 bg-gray-100 dark:bg-slate-800 border-none text-gray-800 dark:text-white"
               value={searchTerm}
               onChange={(e) => searchContacts(e.target.value)}
             />
@@ -133,7 +133,7 @@ const NewDM = () => {
                 {searchedContacts.map((contact) => (
                   <div
                     key={contact._id}
-                    className="flex flex-col md:flex-row justify-between md:items-center gap-3 md:gap-0 bg-[#2c2e3b] p-3 rounded-lg md:bg-transparent md:p-0 md:rounded-none"
+                    className="flex flex-col md:flex-row justify-between md:items-center gap-3 md:gap-0 py-2"
                   >
                     <div 
                       className={`flex gap-3 items-center ${contact.relationship === 'friend' ? 'cursor-pointer' : ''}`}
@@ -211,13 +211,13 @@ const NewDM = () => {
           )}
 
           {searchedContacts.length <= 0 && (
-            <div className="w-full flex flex-col justify-center items-center md:bg-[#181920] mt-5 md:mt-5 duration-1000 transition-all">
+            <div className="w-full flex flex-col justify-center items-center mt-5 md:mt-5 duration-1000 transition-all">
               <Lottie
                 animationData={animationData}
                 loop={true}
                 className="w-[120px] h-[120px]" // Keep size fixed
               />
-              <div className="text-opacity-80 text-white flex flex-col gap-5 items-center mt-7 lg:text-2xl text-xl transition-all duration-300 text-center">
+              <div className="text-opacity-80 text-gray-800 dark:text-white flex flex-col gap-5 items-center mt-7 lg:text-2xl text-xl transition-all duration-300 text-center">
                 <h3 className="poppins-medium">
                   Hi <span className="text-purple-500">! </span>
                   Search new

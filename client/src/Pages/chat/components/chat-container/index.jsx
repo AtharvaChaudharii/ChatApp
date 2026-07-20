@@ -8,23 +8,7 @@ import { useAppStore } from "@/store";
 const ChatContainer = () => {
   const { isDarkMode, setIsDarkMode } = useAppStore();
 
-  // Init dark mode from localStorage on mount
-  useEffect(() => {
-    const storedDarkMode = localStorage.getItem('darkMode');
-    if (storedDarkMode !== null) {
-      setIsDarkMode(storedDarkMode === 'true');
-    }
-  }, [setIsDarkMode]);
-
-  // Theme class management
-  useEffect(() => {
-    // Apply or remove dark mode class on body
-    if (isDarkMode) {
-      document.body.classList.add('dark');
-    } else {
-      document.body.classList.remove('dark');
-    }
-  }, [isDarkMode]);
+  // Dark mode is now handled globally in Pages/chat/index.jsx
 
   return (
     <motion.div 

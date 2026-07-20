@@ -208,7 +208,7 @@ function Auth() {
       <div className="flex-1 flex flex-col md:flex-row items-center justify-center p-4 md:p-8">
         {/* Animation section - Shows at top on mobile, left on desktop */}
         <motion.div 
-          className="w-full md:w-1/2 flex justify-center items-center mb-8 md:mb-0"
+          className="w-full md:w-1/2 flex justify-center items-center mb-0"
           variants={itemVariants}
         >
           <div className="w-full max-w-md">
@@ -230,10 +230,10 @@ function Auth() {
 
         {/* Form section */}
         <motion.div 
-          className="w-full md:w-1/2 max-w-md"
+          className="w-full md:w-1/2 flex justify-center items-center"
           variants={itemVariants}
         >
-          <div className="bg-white dark:bg-slate-800 shadow-xl rounded-2xl p-6 md:p-8">
+          <div className="w-full max-w-md bg-white dark:bg-slate-800 shadow-xl rounded-2xl p-6 md:p-8">
             {/* Welcome message with emoji */}
             <motion.div 
               className="flex items-center justify-center flex-col mb-6"
@@ -244,7 +244,7 @@ function Auth() {
 
               </div>
               {/* Subtitle */}
-              <p className="font-medium text-center text-gray-600 dark:text-gray-300">
+              <p className="font-medium text-center text-gray-600 dark:text-gray-300 px-0 md:px-7">
                 Fill in the details to get started with the best chat app!
               </p>
             </motion.div>
@@ -260,16 +260,16 @@ function Auth() {
                 <TabsList className="bg-transparent rounded-lg w-full mb-4">
                   <TabsTrigger
                     value="login"
-                    className="data-[state=active]:bg-indigo-50 dark:data-[state=active]:bg-indigo-900/30 
-                      data-[state=active]:text-indigo-600 dark:data-[state=active]:text-indigo-400 rounded-lg w-full"
+                    className="data-[state=active]:bg-indigo-50 dark:data-[state=active]:bg-indigo-900/50 
+                      data-[state=active]:text-indigo-700 dark:data-[state=active]:text-white font-medium data-[state=active]:font-semibold rounded-lg w-full transition-all"
                   >
                     Login
                   </TabsTrigger>
 
                   <TabsTrigger
                     value="signup"
-                    className="data-[state=active]:bg-indigo-50 dark:data-[state=active]:bg-indigo-900/30 
-                      data-[state=active]:text-indigo-600 dark:data-[state=active]:text-indigo-400 rounded-lg w-full"
+                    className="data-[state=active]:bg-indigo-50 dark:data-[state=active]:bg-indigo-900/50 
+                      data-[state=active]:text-indigo-700 dark:data-[state=active]:text-white font-medium data-[state=active]:font-semibold rounded-lg w-full transition-all"
                   >
                     Signup
                   </TabsTrigger>

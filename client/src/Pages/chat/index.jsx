@@ -20,13 +20,21 @@ function Chat() {
   } = useAppStore();
   const navigate = useNavigate();
   
-  // Initialize dark mode from localStorage on mount
+  // Initialize dark mode from localStorage on mount and apply to body
   useEffect(() => {
     const storedDarkMode = localStorage.getItem('darkMode');
     if (storedDarkMode !== null) {
       setIsDarkMode(storedDarkMode === 'true');
     }
   }, [setIsDarkMode]);
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.body.classList.add('dark');
+    } else {
+      document.body.classList.remove('dark');
+    }
+  }, [isDarkMode]);
   
   useEffect(() => {
     if (!userInfo.profileSetup) {

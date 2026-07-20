@@ -164,10 +164,10 @@ function Profile() {
   };
 
   return (
-    <div className="bg-[#1b1c24] h-[100vh] flex items-center justify-center flex-col gap-10">
+    <div className="bg-slate-50 dark:bg-slate-900 h-[100vh] flex items-center justify-center flex-col gap-10 transition-colors">
       <div className="flex flex-col gap-10 w-[80vw] md:w-max">
         <div onClick={handleNavigate}>
-          <IoArrowBack className="text-4xl text-white/90 cursor-pointer" />
+          <IoArrowBack className="text-4xl text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer" />
         </div>
         <div className="flex flex-col md:grid md:grid-cols-2 gap-10 md:gap-0">
           <div
@@ -217,14 +217,14 @@ function Profile() {
               accept=".png, .svg, .jpeg, .jpg, .webp, "
             />
           </div>
-          <div className="flex min-w-32 md:min-w-64 flex-col gap-5 text-white items-center justify-center">
+          <div className="flex min-w-32 md:min-w-64 flex-col gap-5 text-gray-800 dark:text-white items-center justify-center">
             <div className="w-full">
               <Input
                 placeholder="Email"
                 type="email"
                 disabled
                 value={userInfo.email}
-                className="rounded-lg p-6 bg-[#2c2e3b] border-none"
+                className="rounded-lg p-6 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-white disabled:opacity-50"
               />
             </div>
             <div className="w-full">
@@ -235,7 +235,7 @@ function Profile() {
                   setFirstName(e.target.value);
                 }}
                 value={firstName}
-                className="rounded-lg p-6 bg-[#2c2e3b] border-none"
+                className="rounded-lg p-6 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-white"
               />
             </div>
             <div className="w-full">
@@ -246,7 +246,7 @@ function Profile() {
                   setLastName(e.target.value);
                 }}
                 value={lastName}
-                className="rounded-lg p-6 bg-[#2c2e3b] border-none"
+                className="rounded-lg p-6 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-white"
               />
             </div>
             <div className="w-full flex gap-5">
@@ -257,7 +257,7 @@ function Profile() {
                     className={`w-8 h-8 transition-all duration-300 rounded-full cursor-pointer ${color}
                     ${
                       selectedColor === index &&
-                      "ring-2 ring-offset-2 ring-offset-background ring-white/10"
+                      "ring-2 ring-offset-2 ring-offset-slate-50 dark:ring-offset-slate-900 ring-gray-400 dark:ring-slate-500"
                     }`}
                     onClick={() => {
                       setSelectedColor(index);
@@ -267,17 +267,17 @@ function Profile() {
               })}
             </div>
             <div className="w-full mt-4">
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className="block text-sm font-medium text-gray-800 dark:text-white mb-2">
                 Preferred Language
               </label>
               <Select
                 value={preferredLanguage}
                 onValueChange={setPreferredLanguage}
               >
-                <SelectTrigger className="rounded-lg p-6 bg-[#2c2e3b] border-none text-white">
+                <SelectTrigger className="rounded-lg p-6 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-white">
                   <SelectValue placeholder="Select your preferred language" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#2c2e3b] text-white border-none">
+                <SelectContent className="bg-white dark:bg-slate-800 text-gray-800 dark:text-white border border-gray-200 dark:border-slate-700">
                   {languages.map((language) => (
                     <SelectItem key={language.value} value={language.value}>
                       {language.label}
@@ -294,7 +294,7 @@ function Profile() {
         <div className="w-full">
           <Button
             onClick={saveChanges}
-            className="w-full h-16 bg-purple-700 hover:bg-purple-900 transition-all duration-300 "
+            className="w-full h-14 bg-purple-700 hover:bg-purple-900 transition-all duration-300 text-lg md:text-xl "
           >
             Save Changes
           </Button>

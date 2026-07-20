@@ -88,7 +88,7 @@ const CreateChannel = () => {
       </TooltipProvider>
 
       <Dialog open={newChannelModal} onOpenChange={setNewChannelModal}>
-        <DialogContent className="bg-[#181920] border-none text-white w-[90vw] max-w-[400px] h-[400px] max-h-[80vh] flex flex-col rounded-lg">
+        <DialogContent className="bg-white dark:bg-slate-900 border-none text-gray-800 dark:text-white w-[90vw] max-w-[400px] h-[400px] max-h-[80vh] flex flex-col rounded-lg">
           <DialogHeader>
             <DialogTitle className="flex justify-center mt-4 text-center">
               Please fill up details for new channel.
@@ -98,14 +98,14 @@ const CreateChannel = () => {
           <div>
             <Input
               placeholder="Channel Name"
-              className="rounded-lg p-6 bg-[#2c2e3b] border-none"
+              className="rounded-lg p-6 bg-gray-100 dark:bg-slate-800 border-none text-gray-800 dark:text-white"
               onChange={(e) => setChannelName(e.target.value)}
               value={channelName}
             />
           </div>
           <div>
             <MultipleSelector
-              className="rounded-lg bg-[#2c2e3b] border-none py-2 text-white"
+              className="rounded-lg bg-gray-100 dark:bg-slate-800 border-none py-2 text-gray-800 dark:text-white"
               defaultOptions={allContacts}
               placeholder="Search Contacts"
               value={selectedContacts}

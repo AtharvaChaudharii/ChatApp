@@ -35,10 +35,10 @@ const ProfileInfo = () => {
   };
 
   return (
-    <div className="shrink-0 h-16 flex items-center justify-between px-10 w-full bg-[#2a2b33]">
-      <div className="flex gap-3 items-center justify-center ">
-        <div className="w-12 h-12 relative ">
-          <Avatar className="h-12 w-12 rounded-full overflow-hidden">
+    <div className="shrink-0 h-[10vh] flex items-center justify-between px-8 md:px-4 w-full bg-gray-100 dark:bg-slate-800 border-t border-gray-200 dark:border-slate-700 transition-colors gap-2">
+      <div className="flex gap-3 items-center justify-center min-w-0">
+        <div className="w-12 h-12 md:w-10 md:h-10 relative shrink-0">
+          <Avatar className="h-12 w-12 md:h-10 md:w-10 rounded-full overflow-hidden">
             {userInfo.image ? (
               <AvatarImage
                 src={`${HOST}/${userInfo.image}`}
@@ -47,7 +47,7 @@ const ProfileInfo = () => {
               />
             ) : (
               <div
-                className={`uppercase h-12 w-12 text-lg border-[1px] flex items-center justify-center rounded-full ${getColor(
+                className={`uppercase h-12 w-12 md:h-10 md:w-10 text-lg md:text-base border-[1px] flex items-center justify-center rounded-full ${getColor(
                   userInfo.color
                 )}`}
               >
@@ -58,7 +58,7 @@ const ProfileInfo = () => {
             )}
           </Avatar>
         </div>
-        <div className="text-white">
+        <div className="text-gray-800 dark:text-white font-medium md:text-sm truncate">
           {userInfo.firstName && userInfo.lastName
             ? `${userInfo.firstName} ${userInfo.lastName}`
             : ""}
@@ -73,7 +73,7 @@ const ProfileInfo = () => {
                 onClick={() => navigate("/profile")}
               />
             </TooltipTrigger>
-            <TooltipContent className="bg-[#1c1b1e] border-none text-white font-bold rounded-md p-1 text-xs shadow-md transition-all duration-300">
+            <TooltipContent className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-100 font-bold rounded-md p-1 text-xs shadow-md transition-all duration-300">
               <p>Edit Profile</p>
             </TooltipContent>
           </Tooltip>
@@ -86,7 +86,7 @@ const ProfileInfo = () => {
                 onClick={logOut}
               />
             </TooltipTrigger>
-            <TooltipContent className="bg-[#1c1b1e] border-none text-white font-bold rounded-md p-1 text-xs shadow-md transition-all duration-300">
+            <TooltipContent className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-gray-100 font-bold rounded-md p-1 text-xs shadow-md transition-all duration-300">
               <p>Logout</p>
             </TooltipContent>
           </Tooltip>
