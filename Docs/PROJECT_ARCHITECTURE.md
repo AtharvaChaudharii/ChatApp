@@ -283,3 +283,6 @@ To evolve PolyChat into an enterprise-grade platform, the following architectura
 | **Read Receipt** | The double-tick UI indicator confirming the recipient has opened the chat. |
 | **JWT** | JSON Web Token; the cryptographic string used to maintain user sessions. |
 | **Translation Map** | The MongoDB data structure (`translatedContent`) storing multiple localized versions of a single Chat Message. |
+
+---
+*Generated: 2026-07-20 | PolyChat Project Architecture v1.2*

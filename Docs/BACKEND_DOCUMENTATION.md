@@ -149,4 +149,4 @@ The `render.yaml` file defines the Infrastructure-as-Code for Render.com Web Ser
 3. **Database Indexing:** Ensure compound indexes exist on `MessagesModel.sender` and `MessagesModel.recipient` to prevent slow collection scans as the database grows.
 
 ---
-*Generated: 2026-07-19 | PolyChat Backend Documentation v1.1*
+*Generated: 2026-07-20 | PolyChat Backend Documentation v1.2*

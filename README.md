@@ -1,6 +1,8 @@
 # PolyChat 🌐💬  
 **Real-time multilingual chat application with AI-powered translation**
 
+🚀 **[Live Demo](https://polychat-translation.vercel.app/profile)**
+
 [![GitHub license](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-18.x-green)](https://nodejs.org/)
 [![React](https://img.shields.io/badge/React-18.x-blue)](https://reactjs.org/)

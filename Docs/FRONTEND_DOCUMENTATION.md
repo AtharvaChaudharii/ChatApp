@@ -151,5 +151,14 @@ The `SocketContext.jsx` file acts as the bridge between the backend Socket.io se
 - **DOM Virtualization:** The `MessageContainer` renders every div in the DOM. For chats with 10,000+ messages, this will cause memory leaks. Implement `@tanstack/react-virtual` to only render visible nodes.
 - **PWA Capabilities:** Implement a Service Worker via the `vite-plugin-pwa` to allow users to install PolyChat to their home screens and cache static assets for offline boots.
 
+## 10. Recent UI Enhancements
+
+Recent frontend iterations focused heavily on pixel-perfect alignment, responsive scaling, and cohesive dark mode aesthetics:
+- **Responsive Layout Constraints:** Fixed horizontal centering of the Auth page by strictly applying Flexbox `w-1/2` limits on both the Lottie animation wrapper and the login form container.
+- **Vertical Alignments & Padding:** Synced the heights of the Contacts Container header (Logo, Notifications, Dark Mode) and footer (Profile Info) to exactly `10vh` to match the active Chat Container heights. Ensured padding adjustments (`pr-8` vs `pr-10`, `pl-8 md:pl-5`) adapt dynamically between mobile and desktop to prevent clipping.
+- **Dark Mode Cohesion:** Unified the `slate-50` and `slate-900` background shifts across all sidebars, the Profile page, and modal popups. Ensured the active Auth tab shifts to a high-contrast bright white color when selected in dark mode.
+- **Modal Blending:** Stripped rigid background colors from individual search result items (in New DM and Pending Requests) so they gracefully inherit the transparency and background of their parent Modal dialogs.
+- **Avatar & Icon Scaling:** Adjusted profile info avatars to dynamically shrink (`h-10 w-10` on desktop vs `h-12 w-12` on mobile) to maintain safe boundaries from utility buttons, utilizing text truncation to prevent overflow.
+
 ---
-*Generated: 2026-07-19 | PolyChat Frontend Documentation v1.1*
+*Generated: 2026-07-20 | PolyChat Frontend Documentation v1.2*

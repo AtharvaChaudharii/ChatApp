@@ -176,5 +176,7 @@ sequenceDiagram
     Recipient React->>Recipient React: UI hides indicator
 ```
 
+> **UI Integration Note:** The presence features, auth screens, and profile setups are designed to seamlessly adapt to both mobile and desktop viewports, with pixel-perfect Flexbox alignment and a cohesive dark/light mode toggle that cascades through all modals, sidebars, and chat states.
+
 ---
-*Generated: 2026-07-19 | PolyChat Features & Workflow v1.1*
+*Generated: 2026-07-20 | PolyChat Features & Workflow v1.2*
