@@ -28,7 +28,7 @@ const ChatContainer = () => {
 
   return (
     <motion.div 
-      className="fixed top-0 h-[100vh] w-[100vw] bg-slate-50 dark:bg-slate-900 flex flex-col md:static md:flex-1 shadow-lg rounded-lg overflow-hidden"
+      className="fixed top-0 h-[100dvh] w-[100vw] bg-slate-50 dark:bg-slate-900 flex flex-col md:static md:flex-1 shadow-lg rounded-none overflow-hidden"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}

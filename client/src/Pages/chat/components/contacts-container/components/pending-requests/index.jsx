@@ -95,7 +95,7 @@ const PendingRequests = () => {
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="bg-[#181920] border-none text-white w-[400px] max-h-[80vh] flex flex-col">
+        <DialogContent className="bg-[#181920] border-none text-white w-[90vw] max-w-[400px] max-h-[80vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>Pending Requests</DialogTitle>
           </DialogHeader>

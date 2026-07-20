@@ -44,29 +44,33 @@ const ContactsContainer = () => {
 
   return (
     // <div>
-    <div className="relative md:w-[35vw] lg:w-[30vw] xl:w-[20vw] bg-[#1b1c24] border-r-2 border-gray-2 border-[#2f303b] w-full">
+    <div className="relative flex flex-col h-full md:w-[35vw] lg:w-[30vw] xl:w-[20vw] bg-[#1b1c24] border-r-2 border-[#2f303b] w-full">
       <div className="pt-3 flex justify-between items-center pr-5">
         <Logo />
         <PendingRequests />
       </div>
-      <div className="my-5">
-        <div className="flex items-center justify-between pr-10">
-          <Title text="Direct Messages" />
-          <NewDM />
+      
+      <div className="flex-1 overflow-y-auto scrollbar-hidden">
+        <div className="my-5">
+          <div className="flex items-center justify-between pr-10">
+            <Title text="Direct Messages" />
+            <NewDM />
+          </div>
+          <div className="max-h-[38vh] overflow-y-auto scrollbar-hidden">
+            <ContactList contacts={directMessagesContacts} />
+          </div>
         </div>
-        <div className="max-h-[38vh] overflow-y-auto scrollbar-hidden">
-          <ContactList contacts={directMessagesContacts} />
+        <div className="my-5">
+          <div className="flex items-center justify-between pr-10">
+            <Title text="Channels" />
+            <CreateChannel />
+          </div>
+          <div className="max-h-[38vh] overflow-y-auto scrollbar-hidden">
+            <ContactList contacts={channels} isChannel={true} />
+          </div>
         </div>
       </div>
-      <div className="my-5">
-        <div className="flex items-center justify-between pr-10">
-          <Title text="Channels" />
-          <CreateChannel />
-        </div>
-        <div className="max-h-[38vh] overflow-y-auto scrollbar-hidden">
-          <ContactList contacts={channels} isChannel={true} />
-        </div>
-      </div>
+
       <ProfileInfo />
     </div>
     // </div>

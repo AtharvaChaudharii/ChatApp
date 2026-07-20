@@ -42,7 +42,7 @@ function Chat() {
   };
 
   return (
-    <div className={`flex h-[100vh] overflow-hidden text-gray-800 dark:text-gray-100 bg-white dark:bg-slate-900 ${isDarkMode ? "dark" : ""}`}>
+    <div className={`flex h-[100dvh] overflow-hidden text-gray-800 dark:text-gray-100 bg-white dark:bg-slate-900 ${isDarkMode ? "dark" : ""}`}>
       <AnimatePresence>
         {isUploading && (
           <motion.div 

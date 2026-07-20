@@ -172,7 +172,7 @@ const MessageBar = () => {
 
   return (
     <motion.div 
-      className="h-[10vh] bg-white dark:bg-slate-800 flex justify-center items-center px-4 md:px-8 py-4 gap-4 border-t border-gray-200 dark:border-slate-700 shadow-inner"
+      className="h-[10vh] bg-white dark:bg-slate-800 flex justify-center items-center px-8 py-4 gap-1 md:gap-4 border-t border-gray-200 dark:border-slate-700 shadow-inner"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.2 }}
