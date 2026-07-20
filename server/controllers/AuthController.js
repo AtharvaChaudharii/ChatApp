@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import User from "../models/UserModel.js";
 // import { compare } from "bcrypt";
 import { compare } from "bcryptjs";
-const maxAge = 3 * 24 * 60 * 60 * 1000; //valid for 3days
+const maxAge = 6 * 60 * 60 * 1000; // valid for 6 hours
 import fs, { promises as fsPromises } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";

@@ -95,6 +95,13 @@ function Auth() {
 
       if (response.data.user.id) {
         setUserInfo(response.data.user);
+        
+        // Save session metadata
+        localStorage.setItem("sessionMetadata", JSON.stringify({
+          expiry: Date.now() + 6 * 60 * 60 * 1000, // 6 hours
+          version: 1
+        }));
+
         if (response.data.user.profileSetup) {
           navigate("/chat");
         } else {
@@ -128,6 +135,13 @@ function Auth() {
 
       if (response.status === 201) {
         setUserInfo(response.data.user);
+        
+        // Save session metadata
+        localStorage.setItem("sessionMetadata", JSON.stringify({
+          expiry: Date.now() + 6 * 60 * 60 * 1000, // 6 hours
+          version: 1
+        }));
+
         toast.success("Signup successful!");
         navigate("/profile");
       }

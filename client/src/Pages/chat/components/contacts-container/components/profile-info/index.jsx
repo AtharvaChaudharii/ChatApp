@@ -25,6 +25,7 @@ const ProfileInfo = () => {
         { withCredentials: true }
       );
       if (response.status === 200) {
+        localStorage.removeItem("sessionMetadata");
         navigate("/auth");
         setUserInfo(null);
       }
