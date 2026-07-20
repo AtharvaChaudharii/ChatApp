@@ -1,4 +1,11 @@
-import React, { useEffect, useRef, useState, useCallback, Suspense, lazy } from "react";
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+  Suspense,
+  lazy,
+} from "react";
 const EmojiPicker = lazy(() => import("emoji-picker-react"));
 import { RiAttachment2 } from "react-icons/ri";
 import { IoSend } from "react-icons/io5";
@@ -94,7 +101,7 @@ const MessageBar = () => {
 
   const handleSendMessage = async () => {
     if (message.trim() === "") return;
-    
+
     // Stop typing indicator when sending
     emitStopTyping();
     if (typingTimeoutRef.current) {
@@ -171,8 +178,8 @@ const MessageBar = () => {
   };
 
   return (
-    <motion.div 
-      className="h-[10vh] bg-white dark:bg-slate-800 flex justify-center items-center px-8 py-4 gap-1 md:gap-4 border-t border-gray-200 dark:border-slate-700 shadow-inner"
+    <motion.div
+      className="h-[10vh] bg-white dark:bg-slate-800 flex justify-center items-center px-8 py-4 gap-2 md:gap-4 border-t border-gray-200 dark:border-slate-700 shadow-inner"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.2 }}
@@ -181,7 +188,7 @@ const MessageBar = () => {
         <textarea
           rows={1}
           placeholder="Type a message..."
-          className="flex-1 py-3 px-5 bg-transparent rounded-full focus:outline-none resize-none text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+          className="flex-1 py-3 px-2 bg-transparent rounded-full focus:outline-none resize-none text-gray-800 dark:text-gray-100 placeholder:px-3 placeholder-gray-400 dark:placeholder-gray-500"
           value={message}
           onChange={handleInputChange}
           onKeyDown={(e) => {
@@ -191,7 +198,7 @@ const MessageBar = () => {
             }
           }}
         />
-        
+
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
@@ -200,14 +207,14 @@ const MessageBar = () => {
         >
           <RiAttachment2 className="text-xl" />
         </motion.button>
-        
+
         <input
           type="file"
           className="hidden"
           ref={fileInputRef}
           onChange={handleAttachmentChange}
         />
-        
+
         <div className="relative">
           <motion.button
             whileHover={{ scale: 1.1 }}
@@ -217,22 +224,30 @@ const MessageBar = () => {
           >
             <RiEmojiStickerLine className="text-xl" />
           </motion.button>
-          
+
           <AnimatePresence>
             {emojiPickerOpen && (
-              <motion.div 
-                className="absolute bottom-12 right-0 z-10"
+              <motion.div
+                className="fixed bottom-24 left-5  md:absolute md:bottom-12 md:left-auto md:translate-x-0 md:right-0 z-[100] w-[90vw] md:w-[350px]"
                 ref={emojiRef}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
                 transition={{ duration: 0.2 }}
               >
-                <Suspense fallback={<div className="w-[300px] h-[400px] bg-white dark:bg-[#222222] rounded-xl shadow-2xl flex items-center justify-center text-sm text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-slate-700">Loading emojis...</div>}>
+                <Suspense
+                  fallback={
+                    <div className="w-full h-[400px] bg-white dark:bg-[#222222] rounded-xl shadow-2xl flex items-center justify-center text-sm text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-slate-700">
+                      Loading emojis...
+                    </div>
+                  }
+                >
                   <EmojiPicker
                     theme={isDarkMode ? "dark" : "light"}
                     onEmojiClick={handleAddEmoji}
                     autoFocusSearch={false}
+                    width="100%"
+                    height={400}
                   />
                 </Suspense>
               </motion.div>
@@ -240,14 +255,16 @@ const MessageBar = () => {
           </AnimatePresence>
         </div>
       </div>
-      
+
       <motion.button
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         className={`rounded-full p-3.5 flex items-center justify-center shadow-md transition-all
-          ${message.trim() 
-            ? 'bg-indigo-500 hover:bg-indigo-600 text-white' 
-            : 'bg-gray-200 dark:bg-slate-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'}`}
+          ${
+            message.trim()
+              ? "bg-indigo-500 hover:bg-indigo-600 text-white"
+              : "bg-gray-200 dark:bg-slate-700 text-gray-400 dark:text-gray-500 cursor-not-allowed"
+          }`}
         onClick={handleSendMessage}
         disabled={!message.trim()}
       >

@@ -95,9 +95,9 @@ const PendingRequests = () => {
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="bg-[#181920] border-none text-white w-[90vw] max-w-[400px] max-h-[80vh] flex flex-col">
+        <DialogContent className="bg-[#181920] border-none text-white w-[90vw] max-w-[400px] max-h-[80vh] flex flex-col rounded-lg">
           <DialogHeader>
-            <DialogTitle>Pending Requests</DialogTitle>
+            <DialogTitle className="flex justify-center mt-4">Pending Requests</DialogTitle>
           </DialogHeader>
           <ScrollArea className="flex-1 overflow-y-auto pr-2 mt-4">
             
@@ -110,7 +110,7 @@ const PendingRequests = () => {
                 <h3 className="text-sm text-gray-400 uppercase tracking-wider mb-3">Friend Requests</h3>
                 <div className="flex flex-col gap-3">
                   {friendRequests.map((req) => (
-                    <div key={req._id} className="flex justify-between items-center bg-[#2c2e3b] p-3 rounded-lg">
+                    <div key={req._id} className="flex flex-col md:flex-row justify-between md:items-center gap-3 md:gap-0 bg-[#2c2e3b] p-3 rounded-lg">
                       <div className="flex gap-3 items-center">
                         <Avatar className="h-10 w-10 rounded-full overflow-hidden">
                           {req.image ? (
@@ -140,7 +140,7 @@ const PendingRequests = () => {
                 <h3 className="text-sm text-gray-400 uppercase tracking-wider mb-3">Channel Invites</h3>
                 <div className="flex flex-col gap-3">
                   {channelInvites.map((channel) => (
-                    <div key={channel._id} className="flex justify-between items-center bg-[#2c2e3b] p-3 rounded-lg">
+                    <div key={channel._id} className="flex flex-col md:flex-row justify-between md:items-center gap-3 md:gap-0 bg-[#2c2e3b] p-3 rounded-lg">
                       <div className="flex flex-col">
                         <span className="text-sm font-medium"># {channel.name}</span>
                         <span className="text-xs text-gray-400">Invited by: {channel.admin.firstName}</span>

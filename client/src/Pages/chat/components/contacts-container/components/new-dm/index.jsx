@@ -112,9 +112,9 @@ const NewDM = () => {
           }
         }}
       >
-        <DialogContent className="bg-[#181920] border-none text-white w-[90vw] max-w-[400px] h-[400px] max-h-[80vh] flex flex-col">
+        <DialogContent className="bg-[#181920] border-none text-white w-[90vw] max-w-[400px] h-[400px] max-h-[80vh] flex flex-col rounded-lg">
           <DialogHeader>
-            <DialogTitle className="flex justify-center">
+            <DialogTitle className="flex justify-center mt-4">
               Please Select a Contact
             </DialogTitle>
             <DialogDescription></DialogDescription>
@@ -129,11 +129,11 @@ const NewDM = () => {
           </div>
           {searchedContacts.length > 0 && (
             <ScrollArea className="h-[250px] ">
-              <div className="flex flex-col gap-5">
+              <div className="flex flex-col gap-5 pr-2">
                 {searchedContacts.map((contact) => (
                   <div
                     key={contact._id}
-                    className="flex justify-between items-center"
+                    className="flex flex-col md:flex-row justify-between md:items-center gap-3 md:gap-0 bg-[#2c2e3b] p-3 rounded-lg md:bg-transparent md:p-0 md:rounded-none"
                   >
                     <div 
                       className={`flex gap-3 items-center ${contact.relationship === 'friend' ? 'cursor-pointer' : ''}`}
